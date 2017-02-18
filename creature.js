@@ -67,7 +67,8 @@ Creature.prototype = {
 			var creature = this.world.creatures.alive[i];
 			if (creature !== this) {
 				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
-					this.kill();
+
+					// do nothing for now
 				}
 			}
 		}

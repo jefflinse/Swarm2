@@ -1,14 +1,48 @@
-function World(numCreatures, canvas) {
+function World(numCreatures, canvas, synaptic) {
 	var that = this;
 
 	this.width = canvas.width;
 	this.height = canvas.height;
 	this.ctx = canvas.getContext('2d');
 
-	this.creatures = {
-		alive: [],
-		dead: []
-	};
+	// populate
+	this.creatures = function (numCreatures, synaptic) {
+
+		var squashingFunctions = [
+			synaptic.Neuron.squash.LOGISTIC,
+			synaptic.Neuron.squash.TANH,
+			synaptic.Neuron.squash.HLIM
+		];
+
+		var creatures = {
+			alive: [],
+			dead: []
+		};
+
+		for (var i = 0; i < numCreatures; i++) {
+
+			var x = Math.random() * that.width;
+			var y = Math.random() * that.height;
+
+			var network = new synaptic.Architect.Perceptron(5, 5, 5, 2);
+
+			// randomize the activation functions
+			network.neurons().forEach(function (neuron) {
+				if (neuron.layer === 'output') {
+					neuron.neuron.squash = synaptic.Neuron.squash.TANH;
+				}
+				else {
+					neuron.neuron.squash = squashingFunctions[Math.floor(Math.random() * squashingFunctions.length)];
+				}
+			});
+
+			creatures.alive[i] = new Creature(network, that, x, y);
+			creatures.alive[i].velocity.random();
+		}
+
+		return creatures;
+
+	}(numCreatures, synaptic);
 
 	this.tick = 1;
 
