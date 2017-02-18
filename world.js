@@ -44,7 +44,7 @@ function World(numCreatures, canvas, synaptic) {
 
 	}(numCreatures, synaptic);
 
-	this.tick = 1;
+	this.ticks = 1;
 
 	var loop = function () {
 
@@ -72,9 +72,9 @@ function World(numCreatures, canvas, synaptic) {
 			}
 		});
 
-		that.tick++;
+		that.ticks++;
 
-		if (that.tick > 100) {
+		if (that.ticks % 100 == 0) {
 
 			console.log("generation");
 
@@ -88,7 +88,6 @@ function World(numCreatures, canvas, synaptic) {
 			}
 
 			that.creatures.dead = [];
-			that.tick = 0;
 		}
 		
 		setTimeout(loop, 10);

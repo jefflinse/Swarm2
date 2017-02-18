@@ -10,4 +10,4 @@ function start(numCreatures)
 	world.start();
 };
 
-start(50);
+start(100);

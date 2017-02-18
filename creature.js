@@ -8,11 +8,11 @@ function Creature(network, world, x, y)
 	this.maxspeed = 2;
 	this.seekDistance = 100;
 	this.sensors = [
-		new Vector(0, 0),
-		new Vector(0, 0),
-		new Vector(0, 0),
-		new Vector(0, 0),
-		new Vector(0, 0)
+		new Vector(null, null),
+		new Vector(null, null),
+		new Vector(null, null),
+		new Vector(null, null),
+		new Vector(null, null)
 	];
 
 	this.location = new Vector(x, y);
@@ -23,6 +23,8 @@ function Creature(network, world, x, y)
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ')';
+
+	this.ticks = 0;
 }
 
 Creature.prototype = {
@@ -60,6 +62,8 @@ Creature.prototype = {
 
 		// interact with the world and other creatures
 		this.interact();
+
+		this.ticks++;
 	},
 
 	processOutputs: function(networkOutput)
@@ -73,14 +77,32 @@ Creature.prototype = {
 	{
 		var sensorIndex = 0;
 
-		// detect edges and other creatures
+		// sense edges
+		if (this.location.x < this.seekDistance) {
+			this.sensors[sensorIndex].set(0, this.location.y);
+			sensorIndex++;
+		}
+		if (this.location.x > this.world.width - this.seekDistance) {
+			this.sensors[sensorIndex].set(this.world.width, this.location.y);
+			sensorIndex++;
+		}
+		if (this.location.y < this.seekDistance) {
+			this.sensors[sensorIndex].set(this.location.x, 0);
+			sensorIndex++;
+		}
+		if (this.location.y > this.world.height - this.seekDistance) {
+			this.sensors[sensorIndex].set(this.location.x, this.world.height);
+			sensorIndex++;
+		}
+
+		// sense other creatures
 		for (var i in this.world.creatures.alive) {
 			var creature = this.world.creatures.alive[i];
 			if (creature !== this) {
 
 				let target = creature.location.copy().subtract(this.location);
 				if (sensorIndex < this.sensors.length && target.magnitude() <= this.seekDistance) {
-					this.sensors[sensorIndex] = target;
+					this.sensors[sensorIndex] = creature.location;
 					sensorIndex++;
 				}
 
@@ -91,8 +113,9 @@ Creature.prototype = {
 			}
 		}
 
+		// zero-out any remaining unused sensors
 		while (sensorIndex < this.sensors.length) {
-			this.sensors[sensorIndex].set(0, 0);
+			this.sensors[sensorIndex].set(null, null);
 			sensorIndex++;
 		}
 
@@ -149,6 +172,7 @@ Creature.prototype = {
 
 	draw: function()
 	{
+		console.log(this.location.x, this.location.y);
 		var gradient = this.world.ctx.createRadialGradient(
 			this.location.x, 
 			this.location.y, 
@@ -168,12 +192,11 @@ Creature.prototype = {
 		// sensors
 		this.world.ctx.lineWidth = .5;
 		for (var i in this.sensors) {
-			if (this.sensors[i].x !== 0 && this.sensors[i].y !== 0) {
+			if (this.sensors[i].x !== null && this.sensors[i].y !== null) {
 				this.world.ctx.beginPath();
 				this.world.ctx.strokeStyle = 'red';
 				this.world.ctx.moveTo(this.location.x, this.location.y);
-				let absolute = this.location.copy().add(this.sensors[i]);
-				this.world.ctx.lineTo(absolute.x, absolute.y);
+				this.world.ctx.lineTo(this.sensors[i].x, this.sensors[i].y);
 				this.world.ctx.stroke();
 			}
 		}
@@ -186,6 +209,6 @@ Creature.prototype = {
 
 	fitness: function()
 	{
-		return this.energy;
+		return this.energy + (this.ticks / this.world.ticks);
 	}
 }
