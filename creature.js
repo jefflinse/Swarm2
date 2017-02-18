@@ -66,7 +66,7 @@ Creature.prototype = {
 	{
 		// first two network outputs are used for the x and y coordinates of the target location
 		var target = new Vector(networkOutput[0] * this.world.width, networkOutput[1] * this.world.height);
-		this.applyForce(this.seek(target));
+		this.applyForce(target);
 	},
 
 	interact: function()
@@ -182,16 +182,6 @@ Creature.prototype = {
 	applyForce: function(force)
 	{
 		this.acceleration.add(force);
-	},
-
-	seek: function(target)
-	{
-		var seek = target.copy().subtract(this.location)
-		seek.normalize();
-		seek.multiply(this.maxspeed);
-		seek.subtract(this.velocity).limit(0.3);
-		
-		return seek;
 	},
 
 	fitness: function()
