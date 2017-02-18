@@ -1,31 +1,77 @@
 function Creature(network, world, x, y)
 {
-	this.energy = 1.0;
-	this.radius = 5;
-	this.innerRadius = 50;
 	this.network = network;
 	this.world = world;
-	this.fitness = .5;
-	this.mass = .3;
+	this.energy = 1.0;
+
+	this.radius = 5;
 	this.maxspeed = 2;
+
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
 	this.acceleration = new Vector(0, 0);
-	this.repulsionScalar = 50;
-	this.color = function () {
-		return 'rgb(' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ')';
-	}();
-
-	this.neighborRatioInInnerRadius = 0;
-	this.neighborRatioInOuterRadius = 0;
-	this.showInnerDetector = false;
-	this.showOuterDetector = false;
+	
+	this.color = 'rgb(' +
+		Math.floor(Math.random() * 255) + ',' +
+		Math.floor(Math.random() * 255) + ',' +
+		Math.floor(Math.random() * 255) + ')';
 }
 
 Creature.prototype = {
+
+	tick: function()
+	{
+		// assign all input values
+		var inputs = [];
+		inputs.push(this.location.x);
+		inputs.push(this.location.y);
+		inputs.push(this.velocity.x);
+		inputs.push(this.velocity.y);
+		inputs.push(this.energy);
+
+		// feed the neural network forward
+		var outputs = this.network.activate(inputs);
+		this.processOutputs(outputs);
+
+		// move based on neural network outputs
+		this.velocity.add(this.acceleration);
+		this.velocity.limit(this.maxspeed);
+		this.location.add(this.velocity);
+		this.acceleration.multiply(0);
+		this.adjustEnergyBy(-.001);
+
+		// interact with the world and other creatures
+		this.interact();
+	},
+
+	processOutputs: function(networkOutput)
+	{
+		// first two network outputs are used for the x and y coordinates of the target location
+		var target = new Vector(networkOutput[0] * this.world.width, networkOutput[1] * this.world.height);
+		this.applyForce(this.seek(target));
+	},
+
+	interact: function()
+	{
+		// enforce boundaries (kill if hitting an edge)
+		if (this.location.x < this.radius ||
+			this.location.x > this.world.width - this.radius ||
+			this.location.y < this.radius ||
+			this.location.y > this.world.height - this.radius
+			) {
+			this.kill();
+		}
+
+		// detect collisions (kill when colliding with others)
+		for (var i in this.world.creatures.alive) {
+			var creature = this.world.creatures.alive[i];
+			if (creature !== this) {
+				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
+					this.kill();
+				}
+			}
+		}
+	},
 
 	clone: function()
 	{
@@ -50,105 +96,8 @@ Creature.prototype = {
 		return creature;
 	},
 
-	draw: function()
-	{
-		this.update();
-
-		var ctx = this.world.ctx;
-		ctx.lineWidth = 1;
-
-		try {
-			var gradient = ctx.createRadialGradient(
-				this.location.x, 
-				this.location.y, 
-				Math.sqrt(this.radius), 
-				this.location.x, 
-				this.location.y, 
-				this.radius);	
-		}
-		catch (e) {
-			console.log("x: " + this.location.x + ", y: " + this.location.y)
-		}
-
-		gradient.addColorStop(0, this.color);
-		gradient.addColorStop(1, 'black');
-		ctx.beginPath();
-		ctx.fillStyle = gradient;
-		ctx.arc(this.location.x, this.location.y, this.radius, 0, 2 * Math.PI);
-		ctx.fill();
-
-		if (this.showOuterDetector) {
-			
-			ctx.lineWidth = .5;
-			ctx.strokeStyle = 'green';
-			ctx.beginPath();
-			ctx.arc(this.location.x, this.location.y, this.innerRadius * 2, 0, 2 * Math.PI);
-			ctx.stroke();
-
-			if (this.showInnerDetector) {
-				ctx.lineWidth = .5;
-				ctx.strokeStyle = 'red';
-				ctx.beginPath();
-				ctx.arc(this.location.x, this.location.y, this.innerRadius, 0, 2 * Math.PI);
-				ctx.stroke();
-			}
-		}
-	},
-
-	moveTo: function(networkOutput)
-	{
-		var force = new Vector(0, 0);
-
-		var target = new Vector(networkOutput[0] * this.world.width, networkOutput[1] * this.world.height);
-		force.add(this.seek(target));
-
-		this.innerRadius = networkOutput[2] * this.radius * this.radius * 2;
-
-		this.applyForce(force);
-	},
-
-	update: function()
-	{
-		this.velocity.add(this.acceleration);
-	    this.velocity.limit(this.maxspeed);
-	    this.location.add(this.velocity);
-	    this.acceleration.multiply(0);
-
-	    this.neighborRatioInInnerRadius = this.ratioOfNeighborsInRadius(this.innerRadius);
-	    this.neighborRatioInOuterRadius = this.ratioOfNeighborsInRadius(this.innerRadius * 2);
-
-		this.energy += this.neighborRatioInOuterRadius;
-		this.energy -= this.neighborRatioInInnerRadius;
-
-		this.showInnerDetector = this.neighborRatioInInnerRadius > 0;
-		this.showOuterDetector = this.neighborRatioInOuterRadius > 0;
-
-		// enforce boundaries
-		if (this.location.x < this.radius + 10) {
-			this.energy = 0;
-		}
-		if (this.location.x > this.world.width - this.radius - 10) {
-			this.energy = 0;
-		}
-		if (this.location.y < this.radius + 10) {
-			this.energy = 0;
-		}
-		if (this.location.y > this.world.height - this.radius - 10) {
-			this.energy = 0;
-		}
-
-		// detect collisions
-		for (var i in this.world.creatures) {
-			var creature = this.world.creatures[i];
-			if (creature !== this) {
-				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
-					this.energy -= .9;
-				}
-			}
-		}
-
-		this.energy -= .001;
-
+	adjustEnergyBy: function (delta) {
+		this.energy += delta;
 		if (this.energy < 0) {
 			this.energy = 0;
 		}
@@ -157,18 +106,31 @@ Creature.prototype = {
 		}
 	},
 
-	ratioOfNeighborsInRadius: function(radius)
-	{
-		var num = 0;
-		for (var i in this.world.creatures) {
-			let creature = this.world.creatures[i];
-			if (creature !== this &&
-				this.location.distanceBetween(creature.location) < radius) {
-				num++;
-			}
-		};
+	kill: function () {
+		this.energy = 0;
+	},
 
-		return num / this.world.creatures.length;
+	isDead: function () {
+		return this.energy === 0;
+	},
+
+	draw: function()
+	{
+		var gradient = this.world.ctx.createRadialGradient(
+			this.location.x, 
+			this.location.y, 
+			Math.sqrt(this.radius), 
+			this.location.x, 
+			this.location.y, 
+			this.radius);
+
+		gradient.addColorStop(0, this.color);
+		gradient.addColorStop(1, 'black');
+		this.world.ctx.lineWidth = 1;
+		this.world.ctx.beginPath();
+		this.world.ctx.fillStyle = gradient;
+		this.world.ctx.arc(this.location.x, this.location.y, this.radius, 0, 2 * Math.PI);
+		this.world.ctx.fill();
 	},
 
 	applyForce: function(force)
@@ -184,5 +146,10 @@ Creature.prototype = {
 		seek.subtract(this.velocity).limit(0.3);
 		
 		return seek;
+	},
+
+	fitness: function()
+	{
+		return this.energy;
 	}
 }

@@ -3,7 +3,11 @@ function start(numCreatures)
 {
 	var synaptic = require('synaptic');
 
-	var world = new World(window.innerWidth, window.innerHeight, document.getElementById('canvas'));
+	var canvas = document.getElementById('canvas');
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	var world = new World(numCreatures, canvas);
 
 	var squashingFunctions = [
 		synaptic.Neuron.squash.LOGISTIC,
@@ -17,7 +21,7 @@ function start(numCreatures)
 		var x = Math.random() * world.width;
 		var y = Math.random() * world.height;
 
-		var network = new synaptic.Architect.Perceptron(8, 20, 3);
+		var network = new synaptic.Architect.Perceptron(5, 20, 3);
 		network.neurons().forEach(function (neuron) {
 			if (neuron.layer === 'output') {
 				neuron.neuron.squash = synaptic.Neuron.squash.TANH;
@@ -27,8 +31,8 @@ function start(numCreatures)
 			}
 		});
 
-		world.creatures[i] = new Creature(network, world, x, y);
-		world.creatures[i].velocity.random();
+		world.creatures.alive[i] = new Creature(network, world, x, y);
+		world.creatures.alive[i].velocity.random();
 	}
 
 	// blastoff

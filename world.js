@@ -1,11 +1,15 @@
-function World(width, height, canvas) {
+function World(numCreatures, canvas) {
 	var that = this;
 
-	canvas.width = this.width = width;
-	canvas.height = this.height = height;
+	this.width = canvas.width;
+	this.height = canvas.height;
 	this.ctx = canvas.getContext('2d');
-	this.creatures = [];
-	this.deadCreatures = [];
+
+	this.creatures = {
+		alive: [],
+		dead: []
+	};
+
 	this.tick = 1;
 
 	var loop = function () {
@@ -13,36 +17,24 @@ function World(width, height, canvas) {
 		applyFadeEffect();
 
 		// update each creature
-		that.creatures.forEach(function(creature)
+		that.creatures.alive.forEach(function(creature)
 		{
-			// move
-			var inputs = [];
-			inputs.push(creature.location.x);
-			inputs.push(creature.location.y);
-			inputs.push(creature.velocity.x);
-			inputs.push(creature.velocity.y);
-			inputs.push(creature.neighborRatioInInnerRadius);
-			inputs.push(creature.neighborRatioInOuterRadius);
-			inputs.push(creature.energy);
-			inputs.push(that.deadCreatures.length);
+			creature.tick();
 
-			var outputs = creature.network.activate(inputs);
-			creature.moveTo(outputs);
-
-			if (creature.energy !== 0) {
-				creature.draw();
+			if (creature.isDead()) {
+				that.creatures.dead.push(creature);
 			}
 			else
 			{
-				that.deadCreatures.push(creature);
+				creature.draw();
 			}
 		});
 
 		// remove dead creatures
-		that.deadCreatures.forEach(function (deadCreature) {
-			var index = that.creatures.indexOf(deadCreature);
+		that.creatures.dead.forEach(function (deadCreature) {
+			var index = that.creatures.alive.indexOf(deadCreature);
 			if (index > -1) {
-				that.creatures.splice(index, 1);
+				that.creatures.alive.splice(index, 1);
 			}
 		});
 
@@ -50,14 +42,18 @@ function World(width, height, canvas) {
 
 		if (that.tick > 100) {
 
-			console.log("new generation");
+			console.log("generation");
 
 			// add new offspring
-			for (var i = 0; i < that.deadCreatures.length; i++) {
-				that.creatures.push(that.creatures[i].clone());
+			var bestCreatures = that.creatures.alive.sort(function (a, b) {
+				return b.fitness() - a.fitness();
+			})
+
+			for (var i = 0, j = 0; i < that.creatures.dead.length; i++, j = (j + 1) % bestCreatures.length) {
+				that.creatures.alive.push(bestCreatures[j].clone());
 			}
 
-			that.deadCreatures = [];
+			that.creatures.dead = [];
 			that.tick = 0;
 		}
 		
