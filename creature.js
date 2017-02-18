@@ -6,6 +6,14 @@ function Creature(network, world, x, y)
 
 	this.radius = 5;
 	this.maxspeed = 2;
+	this.seekDistance = 100;
+	this.sensors = [
+		new Vector(0, 0),
+		new Vector(0, 0),
+		new Vector(0, 0),
+		new Vector(0, 0),
+		new Vector(0, 0)
+	];
 
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
@@ -27,6 +35,16 @@ Creature.prototype = {
 		inputs.push(this.location.y);
 		inputs.push(this.velocity.x);
 		inputs.push(this.velocity.y);
+		inputs.push(this.sensors[0].angle());
+		inputs.push(this.sensors[0].magnitude());
+		inputs.push(this.sensors[1].angle());
+		inputs.push(this.sensors[1].magnitude());
+		inputs.push(this.sensors[2].angle());
+		inputs.push(this.sensors[2].magnitude());
+		inputs.push(this.sensors[3].angle());
+		inputs.push(this.sensors[3].magnitude());
+		inputs.push(this.sensors[4].angle());
+		inputs.push(this.sensors[4].magnitude());
 		inputs.push(this.energy);
 
 		// feed the neural network forward
@@ -53,6 +71,31 @@ Creature.prototype = {
 
 	interact: function()
 	{
+		var sensorIndex = 0;
+
+		// detect edges and other creatures
+		for (var i in this.world.creatures.alive) {
+			var creature = this.world.creatures.alive[i];
+			if (creature !== this) {
+
+				let target = creature.location.copy().subtract(this.location);
+				if (sensorIndex < this.sensors.length && target.magnitude() <= this.seekDistance) {
+					this.sensors[sensorIndex] = target;
+					sensorIndex++;
+				}
+
+				// collision with another creature
+				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
+					this.adjustEnergyBy(-.5);
+				}
+			}
+		}
+
+		while (sensorIndex < this.sensors.length) {
+			this.sensors[sensorIndex].set(0, 0);
+			sensorIndex++;
+		}
+
 		// enforce boundaries (kill if hitting an edge)
 		if (this.location.x < this.radius ||
 			this.location.x > this.world.width - this.radius ||
@@ -60,17 +103,6 @@ Creature.prototype = {
 			this.location.y > this.world.height - this.radius
 			) {
 			this.kill();
-		}
-
-		// detect collisions (kill when colliding with others)
-		for (var i in this.world.creatures.alive) {
-			var creature = this.world.creatures.alive[i];
-			if (creature !== this) {
-				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
-
-					// do nothing for now
-				}
-			}
 		}
 	},
 
@@ -132,6 +164,19 @@ Creature.prototype = {
 		this.world.ctx.fillStyle = gradient;
 		this.world.ctx.arc(this.location.x, this.location.y, this.radius, 0, 2 * Math.PI);
 		this.world.ctx.fill();
+
+		// sensors
+		this.world.ctx.lineWidth = .5;
+		for (var i in this.sensors) {
+			if (this.sensors[i].x !== 0 && this.sensors[i].y !== 0) {
+				this.world.ctx.beginPath();
+				this.world.ctx.strokeStyle = 'red';
+				this.world.ctx.moveTo(this.location.x, this.location.y);
+				let absolute = this.location.copy().add(this.sensors[i]);
+				this.world.ctx.lineTo(absolute.x, absolute.y);
+				this.world.ctx.stroke();
+			}
+		}
 	},
 
 	applyForce: function(force)

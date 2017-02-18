@@ -24,7 +24,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * that.width;
 			var y = Math.random() * that.height;
 
-			var network = new synaptic.Architect.Perceptron(5, 5, 5, 2);
+			var network = new synaptic.Architect.Perceptron(15, 15, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -95,10 +95,10 @@ function World(numCreatures, canvas, synaptic) {
 	}
 
 	var applyFadeEffect = function () {
-		that.ctx.globalAlpha = 0.2;
+		//that.ctx.globalAlpha = 0.2;
 		that.ctx.fillStyle = '#f4f4f4';
 		that.ctx.fillRect(0, 0, that.width, that.height);
-		that.ctx.globalAlpha = 1;
+		//that.ctx.globalAlpha = 1;
 	}
 
 	this.start = function() {
