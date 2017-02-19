@@ -4,10 +4,12 @@ function Creature(network, world, x, y)
 	this.world = world;
 	this.foodEaten = 0;
 	this.foodNearby = 0;
+	this.distanceToNearestFood = 0;
+	this.angleOfNearestFood = 0;
 	this.scanRadius = 50;
 
 	this.radius = 5;
-	this.linearMaxSpeed = 8;
+	this.linearMaxSpeed = 6;
 	this.rotationalMaxSpeed = Math.PI / 6;
 
 	this.location = new Vector(x, y);
@@ -30,6 +32,8 @@ Creature.prototype = {
 		inputs.push(this.velocity.angle());
 		inputs.push(this.velocity.magnitude());
 		inputs.push(this.foodNearby);
+		inputs.push(this.distanceToNearestFood);
+		inputs.push(this.angleOfNearestFood);
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
@@ -56,6 +60,8 @@ Creature.prototype = {
 	interact: function()
 	{
 		this.foodNearby = 0;
+		this.distanceToNearestFood = 0;
+		this.angleOfNearestFood = 0;
 
 		// eat
 		for (var i in this.world.food) {
@@ -68,6 +74,8 @@ Creature.prototype = {
 				}
 				else if (distanceToFood <= this.scanRadius) {
 					this.foodNearby++;
+					this.distanceToNearestFood = Math.min(this.distanceToNearestFood, distanceToFood);
+					this.angleOfNearestFood = target.angle() - this.velocity.angle();
 				}
 			}
 		}

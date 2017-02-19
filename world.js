@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(3, 10, 2);
+			var network = new synaptic.Architect.Perceptron(5, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -52,6 +52,7 @@ function World(numCreatures, canvas, synaptic) {
 	var loop = function () {
 
 		applyFadeEffect();
+
 
 		for (var i = 0; i < that.food.length; i++) {
 			if (that.food[i] === null) {
@@ -83,6 +84,14 @@ function World(numCreatures, canvas, synaptic) {
 				return b.fitness() - a.fitness();
 			});
 
+			var totalFoodCollected = 0;
+			for (var i = 0; i < that.creatures.length; i++) {
+				totalFoodCollected += that.creatures[i].foodEaten;
+			}
+
+			console.log("best fit: " + that.creatures[0].fitness());
+			console.log("average food collected: " + (totalFoodCollected / that.creatures.length));
+
 			var halfLength = that.creatures.length / 2;
 			for (var i = 0; i < halfLength; i++) {
 				that.creatures[i + halfLength] = that.creatures[i].clone();
@@ -90,6 +99,7 @@ function World(numCreatures, canvas, synaptic) {
 		}
 		
 		setTimeout(loop, 10);
+		
 	}
 
 	var applyFadeEffect = function () {
