@@ -2,29 +2,23 @@ function Creature(network, world, x, y)
 {
 	this.network = network;
 	this.world = world;
-	this.energy = 1.0;
+	this.foodEaten = 0;
+	this.foodNearby = 0;
+	this.scanRadius = 50;
 
 	this.radius = 5;
-	this.maxspeed = 2;
-	this.seekDistance = 100;
-	this.sensors = [
-		new Vector(null, null),
-		new Vector(null, null),
-		new Vector(null, null),
-		new Vector(null, null),
-		new Vector(null, null)
-	];
+	this.linearMaxSpeed = 8;
+	this.rotationalMaxSpeed = Math.PI / 6;
 
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
-	this.acceleration = new Vector(0, 0);
 	
 	this.color = 'rgb(' +
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ')';
 
-	this.ticks = 0;
+	this.ticks = 1;
 }
 
 Creature.prototype = {
@@ -33,32 +27,13 @@ Creature.prototype = {
 	{
 		// assign all input values
 		var inputs = [];
-		inputs.push(this.location.x);
-		inputs.push(this.location.y);
-		inputs.push(this.velocity.x);
-		inputs.push(this.velocity.y);
-		inputs.push(this.sensors[0].angle());
-		inputs.push(this.sensors[0].magnitude());
-		inputs.push(this.sensors[1].angle());
-		inputs.push(this.sensors[1].magnitude());
-		inputs.push(this.sensors[2].angle());
-		inputs.push(this.sensors[2].magnitude());
-		inputs.push(this.sensors[3].angle());
-		inputs.push(this.sensors[3].magnitude());
-		inputs.push(this.sensors[4].angle());
-		inputs.push(this.sensors[4].magnitude());
-		inputs.push(this.energy);
+		inputs.push(this.velocity.angle());
+		inputs.push(this.velocity.magnitude());
+		inputs.push(this.foodNearby);
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
 		this.processOutputs(outputs);
-
-		// move based on neural network outputs
-		this.velocity.add(this.acceleration);
-		this.velocity.limit(this.maxspeed);
-		this.location.add(this.velocity);
-		this.acceleration.multiply(0);
-		this.adjustEnergyBy(-.001);
 
 		// interact with the world and other creatures
 		this.interact();
@@ -68,64 +43,33 @@ Creature.prototype = {
 
 	processOutputs: function(networkOutput)
 	{
-		// first two network outputs are used for the x and y coordinates of the target location
-		var target = new Vector(networkOutput[0] * this.world.width, networkOutput[1] * this.world.height);
-		this.applyForce(target);
+		// first two network outputs specify the multipliers for deltas in distance and rotation
+		var ds = networkOutput[0] * this.linearMaxSpeed;
+		var da = networkOutput[1] * this.rotationalMaxSpeed;
+
+		this.velocity.setMagnitude(ds);
+		this.velocity.rotate(da);
+
+		this.location.add(this.velocity);
 	},
 
 	interact: function()
 	{
-		var sensorIndex = 0;
+		this.foodNearby = 0;
 
-		// sense edges
-		if (this.location.x < this.seekDistance) {
-			this.sensors[sensorIndex].set(0, this.location.y);
-			sensorIndex++;
-		}
-		if (this.location.x > this.world.width - this.seekDistance) {
-			this.sensors[sensorIndex].set(this.world.width, this.location.y);
-			sensorIndex++;
-		}
-		if (this.location.y < this.seekDistance) {
-			this.sensors[sensorIndex].set(this.location.x, 0);
-			sensorIndex++;
-		}
-		if (this.location.y > this.world.height - this.seekDistance) {
-			this.sensors[sensorIndex].set(this.location.x, this.world.height);
-			sensorIndex++;
-		}
-
-		// sense other creatures
-		for (var i in this.world.creatures.alive) {
-			var creature = this.world.creatures.alive[i];
-			if (creature !== this) {
-
-				let target = creature.location.copy().subtract(this.location);
-				if (sensorIndex < this.sensors.length && target.magnitude() <= this.seekDistance) {
-					this.sensors[sensorIndex] = creature.location;
-					sensorIndex++;
+		// eat
+		for (var i in this.world.food) {
+			if (this.world.food[i] !== null) {
+				let target = this.world.food[i].copy().subtract(this.location);
+				let distanceToFood = target.magnitude();
+				if (distanceToFood <= this.radius) {
+					this.world.food[i] = null;
+					this.foodEaten++;
 				}
-
-				// collision with another creature
-				if (this.location.distanceBetween(creature.location) < this.radius + creature.radius) {
-					this.adjustEnergyBy(-.5);
+				else if (distanceToFood <= this.scanRadius) {
+					this.foodNearby++;
 				}
 			}
-		}
-
-		// zero-out any remaining unused sensors
-		while (sensorIndex < this.sensors.length) {
-			this.sensors[sensorIndex].set(null, null);
-			sensorIndex++;
-		}
-
-		// enforce boundaries (kill if hitting an edge)
-		if (this.location.x < this.radius ||
-			this.location.x > this.world.width - this.radius ||
-			this.location.y < this.radius ||
-			this.location.y > this.world.height - this.radius
-			) {
-			this.kill();
 		}
 	},
 
@@ -140,8 +84,8 @@ Creature.prototype = {
 			var neuron = neurons[i].neuron;
 			for (var j in neuron.connections.projected) {
 				var connection = neuron.connections.projected[j];
-				if (Math.random() < .5) {
-					connection.weight += (Math.random() * .1) - .05;
+				if (Math.random() < .3) {
+					connection.weight += (Math.random() * .2) - .1;
 				}
 			}
 		}
@@ -149,66 +93,39 @@ Creature.prototype = {
 		creature.velocity.random();
 		creature.color = this.color;
 
+		// bad
+		this.reset();
+		creature.reset();
+
 		return creature;
-	},
-
-	adjustEnergyBy: function (delta) {
-		this.energy += delta;
-		if (this.energy < 0) {
-			this.energy = 0;
-		}
-		else if (this.energy > 1) {
-			this.energy = 1;
-		}
-	},
-
-	kill: function () {
-		this.energy = 0;
-	},
-
-	isDead: function () {
-		return this.energy === 0;
 	},
 
 	draw: function()
 	{
-		console.log(this.location.x, this.location.y);
-		var gradient = this.world.ctx.createRadialGradient(
-			this.location.x, 
-			this.location.y, 
-			Math.sqrt(this.radius), 
-			this.location.x, 
-			this.location.y, 
-			this.radius);
-
-		gradient.addColorStop(0, this.color);
-		gradient.addColorStop(1, 'black');
 		this.world.ctx.lineWidth = 1;
 		this.world.ctx.beginPath();
-		this.world.ctx.fillStyle = gradient;
+		this.world.ctx.fillStyle = this.color;
 		this.world.ctx.arc(this.location.x, this.location.y, this.radius, 0, 2 * Math.PI);
 		this.world.ctx.fill();
 
-		// sensors
-		this.world.ctx.lineWidth = .5;
-		for (var i in this.sensors) {
-			if (this.sensors[i].x !== null && this.sensors[i].y !== null) {
-				this.world.ctx.beginPath();
-				this.world.ctx.strokeStyle = 'red';
-				this.world.ctx.moveTo(this.location.x, this.location.y);
-				this.world.ctx.lineTo(this.sensors[i].x, this.sensors[i].y);
-				this.world.ctx.stroke();
-			}
-		}
-	},
-
-	applyForce: function(force)
-	{
-		this.acceleration.add(force);
+		this.world.ctx.lineWidth = 3;
+		this.world.ctx.beginPath();
+		this.world.ctx.strokeStyle = 'black';
+		this.world.ctx.moveTo(this.location.x, this.location.y);
+		var relativeTarget = this.velocity.copy().setMagnitude(this.radius + 5);
+		var absolutePosition = this.location.copy().add(relativeTarget);
+		this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
+		this.world.ctx.stroke();
 	},
 
 	fitness: function()
 	{
-		return this.energy + (this.ticks / this.world.ticks);
+		return this.foodEaten / this.ticks;
+	},
+
+	reset: function()
+	{
+		this.ticks = 0;
+		this.foodEaten = 0;
 	}
 }

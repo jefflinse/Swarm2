@@ -11,20 +11,18 @@ function World(numCreatures, canvas, synaptic) {
 		var squashingFunctions = [
 			synaptic.Neuron.squash.LOGISTIC,
 			synaptic.Neuron.squash.TANH,
-			synaptic.Neuron.squash.HLIM
+			synaptic.Neuron.squash.HLIM,
+			synaptic.Neuron.squash.IDENTITY
 		];
 
-		var creatures = {
-			alive: [],
-			dead: []
-		};
+		var creatures = [];
 
 		for (var i = 0; i < numCreatures; i++) {
 
-			var x = Math.random() * that.width;
-			var y = Math.random() * that.height;
+			var x = Math.random() * (that.width - 100) + 50;
+			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(15, 15, 2);
+			var network = new synaptic.Architect.Perceptron(3, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -36,13 +34,18 @@ function World(numCreatures, canvas, synaptic) {
 				}
 			});
 
-			creatures.alive[i] = new Creature(network, that, x, y);
-			creatures.alive[i].velocity.random();
+			creatures[i] = new Creature(network, that, x, y);
+			creatures[i].velocity.random();
 		}
 
 		return creatures;
 
 	}(numCreatures, synaptic);
+
+	this.food = [];
+	for (var i = 0; i < 2000; i++) {
+		this.food.push(null);
+	}
 
 	this.ticks = 1;
 
@@ -50,44 +53,40 @@ function World(numCreatures, canvas, synaptic) {
 
 		applyFadeEffect();
 
+		for (var i = 0; i < that.food.length; i++) {
+			if (that.food[i] === null) {
+				var x = Math.random() * (that.width - 100) + 50;
+				var y = Math.random() * (that.height - 100) + 50;
+				that.food[i] = new Vector(x, y);
+			}
+
+			that.ctx.beginPath();
+			that.ctx.fillStyle = '#DDDDDD';
+			that.ctx.arc(that.food[i].x, that.food[i].y, 3, 0, 2 * Math.PI);
+			that.ctx.fill();
+		}
+
 		// update each creature
-		that.creatures.alive.forEach(function(creature)
-		{
+		that.creatures.forEach(function (creature) {
 			creature.tick();
-
-			if (creature.isDead()) {
-				that.creatures.dead.push(creature);
-			}
-			else
-			{
-				creature.draw();
-			}
-		});
-
-		// remove dead creatures
-		that.creatures.dead.forEach(function (deadCreature) {
-			var index = that.creatures.alive.indexOf(deadCreature);
-			if (index > -1) {
-				that.creatures.alive.splice(index, 1);
-			}
+			creature.draw();
 		});
 
 		that.ticks++;
 
-		if (that.ticks % 100 == 0) {
+		if (that.ticks % 500 == 0) {
 
-			console.log("generation");
+			console.log("new generation");
 
-			// add new offspring
-			var bestCreatures = that.creatures.alive.sort(function (a, b) {
+			// sort by fitness
+			that.creatures.sort(function (a, b) {
 				return b.fitness() - a.fitness();
-			})
+			});
 
-			for (var i = 0, j = 0; i < that.creatures.dead.length; i++, j = (j + 1) % bestCreatures.length) {
-				that.creatures.alive.push(bestCreatures[j].clone());
+			var halfLength = that.creatures.length / 2;
+			for (var i = 0; i < halfLength; i++) {
+				that.creatures[i + halfLength] = that.creatures[i].clone();
 			}
-
-			that.creatures.dead = [];
 		}
 		
 		setTimeout(loop, 10);
