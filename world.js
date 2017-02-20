@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(5, 10, 2);
+			var network = new synaptic.Architect.Perceptron(5, 5, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -53,11 +53,17 @@ function World(numCreatures, canvas, synaptic) {
 
 		applyFadeEffect();
 
-
+		// add food
 		for (var i = 0; i < that.food.length; i++) {
 			if (that.food[i] === null) {
 				var x = Math.random() * (that.width - 100) + 50;
 				var y = Math.random() * (that.height - 100) + 50;
+				while (x > (that.width / 2) - (that.width / 6) && x < (that.width / 2) + (that.width / 6) &&
+					y > (that.height / 2) - (that.height / 6) && y < (that.height / 2) + (that.height / 6)) {
+					x = Math.random() * (that.width - 100) + 50;
+					y = Math.random() * (that.height - 100) + 50;
+				}
+
 				that.food[i] = new Vector(x, y);
 			}
 
@@ -85,8 +91,10 @@ function World(numCreatures, canvas, synaptic) {
 			});
 
 			var totalFoodCollected = 0;
+			var colors = {};
 			for (var i = 0; i < that.creatures.length; i++) {
 				totalFoodCollected += that.creatures[i].foodEaten;
+				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
 			}
 
 			console.log("best fit: " + that.creatures[0].fitness());
@@ -95,6 +103,16 @@ function World(numCreatures, canvas, synaptic) {
 			var halfLength = that.creatures.length / 2;
 			for (var i = 0; i < halfLength; i++) {
 				that.creatures[i + halfLength] = that.creatures[i].clone();
+			}
+
+			if (Object.keys(colors).length == 1) {
+				// randomize colors
+				for (var i = 0; i < that.creatures.length; i++) {
+					that.creatures[i].color = 'rgb(' +
+						Math.floor(Math.random() * 255) + ',' +
+						Math.floor(Math.random() * 255) + ',' +
+						Math.floor(Math.random() * 255) + ')';
+				}
 			}
 		}
 		
