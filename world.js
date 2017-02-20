@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(5, 5, 2);
+			var network = new synaptic.Architect.Perceptron(6, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
