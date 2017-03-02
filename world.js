@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(6, 10, 2);
+			var network = new synaptic.Architect.Perceptron(4, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -106,6 +106,7 @@ function World(numCreatures, canvas, synaptic) {
 			}
 
 			if (Object.keys(colors).length == 1) {
+				console.log("randomizing colors");
 				// randomize colors
 				for (var i = 0; i < that.creatures.length; i++) {
 					that.creatures[i].color = 'rgb(' +
