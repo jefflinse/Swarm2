@@ -6,7 +6,7 @@ function Creature(network, world, x, y)
 	this.scanRadius = 50;
 
 	this.radius = 5;
-	this.linearMaxSpeed = 6;
+	this.linearMaxSpeed = 4;
 	this.rotationalMaxSpeed = Math.PI;
 
 	this.location = new Vector(x, y);
