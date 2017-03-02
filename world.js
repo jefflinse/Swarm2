@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(4, 10, 10, 2);
+			var network = new synaptic.Architect.Perceptron(4, 5, 5, 5, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -56,6 +56,10 @@ function World(numCreatures, canvas, synaptic) {
 		// add food
 		for (var i = 0; i < that.food.length; i++) {
 			if (that.food[i] === null) {
+				that.food[i] = new Vector(null, null);
+			}
+
+			if (that.food[i].x === null || that.food[i].y === null) {
 				var x = Math.random() * (that.width - 100) + 50;
 				var y = Math.random() * (that.height - 100) + 50;
 				while (x > (that.width / 2) - (that.width / 6) && x < (that.width / 2) + (that.width / 6) &&
@@ -63,8 +67,8 @@ function World(numCreatures, canvas, synaptic) {
 					x = Math.random() * (that.width - 100) + 50;
 					y = Math.random() * (that.height - 100) + 50;
 				}
-
-				that.food[i] = new Vector(x, y);
+				that.food[i].x = x;
+				that.food[i].y = y;
 			}
 
 			that.ctx.beginPath();

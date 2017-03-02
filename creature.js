@@ -63,13 +63,13 @@ Creature.prototype = {
 
 		// eat
 		for (var i in this.world.food) {
-			if (this.world.food[i] !== null) {
+			if (this.world.food[i].x !== null && this.world.food[i].y !== null) {
 				let distanceToFood = this.location.distanceBetween(this.world.food[i]);
 				if (distanceToFood <= this.radius) {
-					this.world.food[i] = null;
+					this.world.food[i].x = null; // invalidate
 					this.foodEaten++;
 					this.radius += .1;
-					this.scanRadius += .1;
+					this.scanRadius = this.radius * 10;
 				}
 				else if (distanceToFood <= this.scanRadius) {
 					foodNearbyX += this.world.food[i].x;
