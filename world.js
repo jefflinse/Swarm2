@@ -47,6 +47,8 @@ function World(numCreatures, canvas, synaptic) {
 		this.food.push(null);
 	}
 
+	this.generation = 1;
+	this.epoch = 1;
 	this.ticks = 1;
 
 	var loop = function () {
@@ -88,6 +90,7 @@ function World(numCreatures, canvas, synaptic) {
 		if (that.ticks % 300 == 0) {
 
 			console.log("new generation");
+			that.generation++;
 
 			// sort by fitness
 			that.creatures.sort(function (a, b) {
@@ -101,7 +104,7 @@ function World(numCreatures, canvas, synaptic) {
 				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
 			}
 
-			console.log("best fit: " + that.creatures[0].fitness());
+			console.log("most fit: " + that.creatures[0].fitness());
 			console.log("average food collected: " + (totalFoodCollected / that.creatures.length));
 
 			var halfLength = that.creatures.length / 2;
@@ -110,7 +113,9 @@ function World(numCreatures, canvas, synaptic) {
 			}
 
 			if (Object.keys(colors).length == 1) {
-				console.log("randomizing colors");
+				console.log("NEW EPOCH! randomizing colors");
+				that.epoch++;
+
 				// randomize colors
 				for (var i = 0; i < that.creatures.length; i++) {
 					that.creatures[i].color = 'rgb(' +
@@ -120,6 +125,15 @@ function World(numCreatures, canvas, synaptic) {
 				}
 			}
 		}
+
+		// draw some info
+		that.ctx.font = '16px sans-serif';
+		that.ctx.fillStyle = 'black';
+
+		that.ctx.fillText(
+			'Epoch: ' + that.epoch + '   ' +
+			'Generation: ' + that.generation,
+			10, 20);
 		
 		setTimeout(loop, 10);
 		
