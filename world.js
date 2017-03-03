@@ -51,6 +51,8 @@ function World(numCreatures, canvas, synaptic) {
 	this.epoch = 1;
 	this.ticks = 1;
 
+	this.overlay = new Overlay(this);
+
 	var loop = function () {
 
 		applyFadeEffect();
@@ -126,14 +128,7 @@ function World(numCreatures, canvas, synaptic) {
 			}
 		}
 
-		// draw some info
-		that.ctx.font = '16px sans-serif';
-		that.ctx.fillStyle = 'black';
-
-		that.ctx.fillText(
-			'Epoch: ' + that.epoch + '   ' +
-			'Generation: ' + that.generation,
-			10, 20);
+		that.overlay.draw();
 		
 		setTimeout(loop, 10);
 		
