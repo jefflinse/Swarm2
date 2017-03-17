@@ -2,12 +2,14 @@ function Creature(network, world, x, y)
 {
 	this.network = network;
 	this.world = world;
+	this.energy = 5;
 	this.foodEaten = 0;
 	this.scanRadius = 50;
 
 	this.radius = 5;
 	this.linearMaxSpeed = 4;
 	this.rotationalMaxSpeed = Math.PI;
+	this.maxEnergy = 10;
 
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
@@ -26,6 +28,10 @@ Creature.prototype = {
 
 	tick: function()
 	{
+		if (!this.isAlive()) {
+			return;
+		}
+
 		// assign all input values
 		var inputs = [];
 		inputs.push(this.nearestFood.magnitude());
@@ -44,13 +50,12 @@ Creature.prototype = {
 	processOutputs: function(networkOutput)
 	{
 		// first two network outputs specify the multipliers for deltas in distance and rotation
-		var ds = networkOutput[0] * this.linearMaxSpeed;
-		var da = networkOutput[1] * this.rotationalMaxSpeed;
-
+		let ds = networkOutput[0] * this.linearMaxSpeed;
+		let da = networkOutput[1] * this.rotationalMaxSpeed;
 		this.velocity.setMagnitude(ds);
 		this.velocity.rotate(da);
-
 		this.location.add(this.velocity);
+		this.energy -= .2 * ((ds / this.linearMaxSpeed) + (da / Math.PI * 2));
 	},
 
 	interact: function()
@@ -76,6 +81,7 @@ Creature.prototype = {
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
+		this.energy += 2;
 	},
 
 	clone: function()
@@ -107,6 +113,10 @@ Creature.prototype = {
 
 	draw: function()
 	{
+		if (!this.isAlive()) {
+			return;
+		}
+
 		this.world.ctx.lineWidth = 1;
 		this.world.ctx.beginPath();
 		this.world.ctx.fillStyle = this.color;
@@ -137,12 +147,18 @@ Creature.prototype = {
 
 	fitness: function()
 	{
-		return this.foodEaten / this.ticks;
+		return this.isAlive() ? this.foodEaten / this.ticks : 0;
+	},
+
+	isAlive: function()
+	{
+		return this.energy > 0;
 	},
 
 	reset: function()
 	{
 		this.ticks = 0;
 		this.foodEaten = 0;
+		this.energy = this.maxEnergy;
 	}
 }
