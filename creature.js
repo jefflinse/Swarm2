@@ -12,7 +12,7 @@ function Creature(network, world, x, y)
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
 
-	this.highestDensityTarget = this.location;
+	this.nearestFood = this.location;
 	
 	this.color = 'rgb(' +
 		Math.floor(Math.random() * 255) + ',' +
@@ -30,8 +30,8 @@ Creature.prototype = {
 		var inputs = [];
 		inputs.push(this.velocity.angle());
 		inputs.push(this.velocity.magnitude());
-		inputs.push(this.highestDensityTarget.magnitude());
-		inputs.push(this.highestDensityTarget.angle());
+		inputs.push(this.nearestFood.magnitude());
+		inputs.push(this.nearestFood.angle());
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
@@ -57,37 +57,27 @@ Creature.prototype = {
 
 	interact: function()
 	{
-		var foodNearby = 0;
-		var foodNearbyX = 0;
-		var foodNearbyY = 0;
+		this.nearestFood = new Vector(0, 0);
+		var distanceToNearestFood = this.scanRadius + 1;
 
 		// eat
 		for (var i in this.world.food) {
 			if (this.world.food[i].x !== null && this.world.food[i].y !== null) {
 				let distanceToFood = this.location.distanceBetween(this.world.food[i]);
 				if (distanceToFood <= this.radius) {
-					this.world.food[i].x = null; // invalidate
-					this.foodEaten++;
-					this.radius += .1;
-					this.scanRadius = this.radius * 10;
+					this.eatFood(i);
 				}
-				else if (distanceToFood <= this.scanRadius) {
-					foodNearbyX += this.world.food[i].x;
-					foodNearbyY += this.world.food[i].y;
-					foodNearby++;
+				else if (distanceToFood <= distanceToNearestFood) {
+					this.nearestFood = this.world.food[i].copy().subtract(this.location);
+					distanceToNearestFood = distanceToFood;
 				}
 			}
 		}
+	},
 
-		if (foodNearby > 0) {
-			var averageNearbyFoodX = foodNearbyX / foodNearby;
-			var averageNearbyFoodY = foodNearbyY / foodNearby;
-			var highestDensityLocation = new Vector(averageNearbyFoodX, averageNearbyFoodY);
-			this.highestDensityTarget = highestDensityLocation.subtract(this.location);
-		}
-		else {
-			this.highestDensityTarget = new Vector(0, 0);
-		}
+	eatFood: function(foodId) {
+		this.world.food[foodId].x = null; // invalidate
+		this.foodEaten++;
 	},
 
 	clone: function()
@@ -136,13 +126,15 @@ Creature.prototype = {
 		this.world.ctx.stroke();
 
 		// draw line to highest density target
-		this.world.ctx.lineWidth = 1;
-		this.world.ctx.beginPath();
-		this.world.ctx.strokeStyle = 'rgba(255, 0, 0, .25)';
-		this.world.ctx.moveTo(this.location.x, this.location.y);
-		var absolutePosition = this.location.copy().add(this.highestDensityTarget);
-		this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
-		this.world.ctx.stroke();
+		if (this.nearestFood.magnitude() < this.scanRadius) {
+			this.world.ctx.lineWidth = 1;
+			this.world.ctx.beginPath();
+			this.world.ctx.strokeStyle = 'rgba(255, 0, 0, .25)';
+			this.world.ctx.moveTo(this.location.x, this.location.y);
+			var absolutePosition = this.location.copy().add(this.nearestFood);
+			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
+			this.world.ctx.stroke();
+		}
 	},
 
 	fitness: function()
@@ -154,7 +146,5 @@ Creature.prototype = {
 	{
 		this.ticks = 0;
 		this.foodEaten = 0;
-		this.radius = 5;
-		this.scanRadius = 50;
 	}
 }

@@ -43,7 +43,7 @@ function World(numCreatures, canvas, synaptic) {
 	}(numCreatures, synaptic);
 
 	this.food = [];
-	for (var i = 0; i < 2000; i++) {
+	for (var i = 0; i < 500; i++) {
 		this.food.push(null);
 	}
 
