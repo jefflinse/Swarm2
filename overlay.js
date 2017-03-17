@@ -17,7 +17,8 @@ function Overlay(world) {
 
 		ctx.fillText(
 			'Epoch: ' + this.world.epoch + '   ' +
-			'Generation: ' + this.world.generation,
+			'Generation: ' + this.world.generation + '   ' +
+			'Species: ' + this.world.numSpecies,
 			10, 20);
 	}
 }

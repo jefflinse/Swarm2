@@ -49,6 +49,7 @@ function World(numCreatures, canvas, synaptic) {
 
 	this.generation = 1;
 	this.epoch = 1;
+	this.numSpecies = numCreatures;
 	this.ticks = 1;
 
 	this.overlay = new Overlay(this);
@@ -114,7 +115,8 @@ function World(numCreatures, canvas, synaptic) {
 				that.creatures[i + halfLength] = that.creatures[i].clone();
 			}
 
-			if (Object.keys(colors).length == 1) {
+			that.numSpecies = Object.keys(colors).length;
+			if (that.numSpecies == 1) {
 				console.log("NEW EPOCH! randomizing colors");
 				that.epoch++;
 
@@ -131,7 +133,6 @@ function World(numCreatures, canvas, synaptic) {
 		that.overlay.draw();
 		
 		setTimeout(loop, 10);
-		
 	}
 
 	var applyFadeEffect = function () {
