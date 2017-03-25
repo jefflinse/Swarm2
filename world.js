@@ -42,8 +42,9 @@ function World(numCreatures, canvas, synaptic) {
 
 	}(numCreatures, synaptic);
 
+	this.foodDensity = .001;
 	this.food = [];
-	for (var i = 0; i < 500; i++) {
+	for (var i = 0; i < (this.width * this.height * this.foodDensity); i++) {
 		this.food.push(null);
 	}
 
