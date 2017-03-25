@@ -128,7 +128,7 @@ Creature.prototype = {
 		this.world.ctx.beginPath();
 		this.world.ctx.strokeStyle = 'black';
 		this.world.ctx.moveTo(this.location.x, this.location.y);
-		var relativeTarget = this.velocity.copy().setMagnitude(this.radius + 5);
+		var relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
 		var absolutePosition = this.location.copy().add(relativeTarget);
 		this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
 		this.world.ctx.stroke();
