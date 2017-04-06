@@ -76,12 +76,28 @@ Creature.prototype = {
 				}
 			}
 		}
+
+		// fight
+		for (var i in this.world.creatures) {
+			if (this.world.creatures[i] !== this) {
+				let distanceToCreature = this.location.distanceBetween(this.world.creatures[i].location);
+				if (distanceToCreature <= this.radius + this.world.creatures[i].radius &&
+					this.velocity.magnitude() > this.world.creatures[i].velocity.magnitude()) {
+					this.attackCreature(i);
+				}
+			}
+		}
 	},
 
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
 		this.energy += 2;
+	},
+
+	attackCreature: function(creatureId) {
+		this.energy += this.world.creatures[creatureId].energy;
+		this.world.creatures[creatureId].energy = 0; // kill it
 	},
 
 	clone: function()
