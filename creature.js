@@ -35,6 +35,8 @@ Creature.prototype = {
 
 		// assign all input values
 		var inputs = [];
+		inputs.push(this.velocity.magnitude());
+		inputs.push(this.velocity.angle());
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
 		inputs.push(this.nearestCreature.magnitude());
