@@ -15,6 +15,7 @@ function Creature(network, world, x, y)
 	this.velocity = new Vector(0, 0);
 
 	this.nearestFood = this.location;
+	this.nearestCreature = this.location;
 	
 	this.color = 'rgb(' +
 		Math.floor(Math.random() * 255) + ',' +
@@ -36,6 +37,8 @@ Creature.prototype = {
 		var inputs = [];
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
+		inputs.push(this.nearestCreature.magnitude());
+		inputs.push(this.nearestCreature.angle());
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
@@ -63,6 +66,9 @@ Creature.prototype = {
 		this.nearestFood = new Vector(0, 0);
 		var distanceToNearestFood = this.scanRadius + 1;
 
+		this.nearestCreature = new Vector(0, 0);
+		var distanceToNearestCreature = this.scanRadius + 1;
+
 		// eat
 		for (var i in this.world.food) {
 			if (this.world.food[i].x !== null && this.world.food[i].y !== null) {
@@ -79,11 +85,15 @@ Creature.prototype = {
 
 		// fight
 		for (var i in this.world.creatures) {
-			if (this.world.creatures[i] !== this) {
+			if (this.world.creatures[i] !== this && this.world.creatures[i].isAlive()) {
 				let distanceToCreature = this.location.distanceBetween(this.world.creatures[i].location);
 				if (distanceToCreature <= this.radius + this.world.creatures[i].radius &&
 					this.velocity.magnitude() > this.world.creatures[i].velocity.magnitude()) {
 					this.attackCreature(i);
+				}
+				else if (distanceToCreature <= distanceToNearestCreature) {
+					this.nearestCreature = this.world.creatures[i].location.copy().subtract(this.location);
+					distanceToNearestCreature = distanceToCreature;
 				}
 			}
 		}
@@ -149,13 +159,24 @@ Creature.prototype = {
 		this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
 		this.world.ctx.stroke();
 
-		// draw line to highest density target
+		// draw line to nearest food
 		if (this.nearestFood.magnitude() < this.scanRadius) {
+			this.world.ctx.lineWidth = 1;
+			this.world.ctx.beginPath();
+			this.world.ctx.strokeStyle = 'rgba(150, 150, 150, .5)';
+			this.world.ctx.moveTo(this.location.x, this.location.y);
+			var absolutePosition = this.location.copy().add(this.nearestFood);
+			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
+			this.world.ctx.stroke();
+		}
+
+		// draw line to nearest creature
+		if (this.nearestCreature.magnitude() < this.scanRadius) {
 			this.world.ctx.lineWidth = 1;
 			this.world.ctx.beginPath();
 			this.world.ctx.strokeStyle = 'rgba(255, 0, 0, .25)';
 			this.world.ctx.moveTo(this.location.x, this.location.y);
-			var absolutePosition = this.location.copy().add(this.nearestFood);
+			var absolutePosition = this.location.copy().add(this.nearestCreature);
 			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
 			this.world.ctx.stroke();
 		}
