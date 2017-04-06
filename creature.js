@@ -108,7 +108,7 @@ Creature.prototype = {
 	},
 
 	attackCreature: function(creatureId) {
-		this.energy += this.world.creatures[creatureId].energy;
+		this.energy += 5;
 		this.world.creatures[creatureId].energy = 0; // kill it
 	},
 
