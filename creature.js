@@ -35,6 +35,7 @@ Creature.prototype = {
 
 		// assign all input values
 		var inputs = [];
+		inputs.push(this.energy);
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
 		inputs.push(this.nearestCreature.magnitude());
@@ -102,11 +103,11 @@ Creature.prototype = {
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
-		this.energy += 2;
+		this.energy = Math.min(this.maxEnergy, this.energy + 2);
 	},
 
 	attackCreature: function(creatureId) {
-		this.energy += 5;
+		this.energy = this.maxEnergy;
 		this.world.creatures[creatureId].energy = 0; // kill it
 	},
 
@@ -196,6 +197,6 @@ Creature.prototype = {
 	{
 		this.ticks = 0;
 		this.foodEaten = 0;
-		this.energy = this.maxEnergy;
+		this.energy = 5;
 	}
 }
