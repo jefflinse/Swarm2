@@ -22,7 +22,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(6, 10, 10, 2);
+			var network = new synaptic.Architect.Perceptron(4, 10, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -49,7 +49,9 @@ function World(numCreatures, canvas, synaptic) {
 	}
 
 	this.generation = 1;
-	this.epoch = 1;
+	this.era = 1;
+	that.mostFit = 0;
+	that.averageFoodCollected = 0;
 	this.numSpecies = numCreatures;
 	this.ticks = 1;
 
@@ -108,8 +110,8 @@ function World(numCreatures, canvas, synaptic) {
 				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
 			}
 
-			console.log("most fit: " + that.creatures[0].fitness());
-			console.log("average food collected: " + (totalFoodCollected / that.creatures.length));
+			that.mostFit = that.creatures[0].fitness();
+			that.averageFoodCollected = (totalFoodCollected / that.creatures.length);
 
 			var halfLength = that.creatures.length / 2;
 			for (var i = 0; i < halfLength; i++) {
@@ -118,8 +120,7 @@ function World(numCreatures, canvas, synaptic) {
 
 			that.numSpecies = Object.keys(colors).length;
 			if (that.numSpecies == 1) {
-				console.log("NEW EPOCH! randomizing colors");
-				that.epoch++;
+				that.era++;
 
 				// randomize colors
 				for (var i = 0; i < that.creatures.length; i++) {
@@ -128,6 +129,8 @@ function World(numCreatures, canvas, synaptic) {
 						Math.floor(Math.random() * 255) + ',' +
 						Math.floor(Math.random() * 255) + ')';
 				}
+
+				that.numSpecies = that.numCreatures;
 			}
 		}
 

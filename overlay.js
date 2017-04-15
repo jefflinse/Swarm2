@@ -16,9 +16,11 @@ function Overlay(world) {
 		ctx.fillStyle = 'black';
 
 		ctx.fillText(
-			'Epoch: ' + this.world.epoch + '   ' +
+			'Era: ' + this.world.era + '   ' +
 			'Generation: ' + this.world.generation + '   ' +
-			'Species: ' + this.world.numSpecies,
+			'Species: ' + this.world.numSpecies + '   ' +
+			'Avg. Food Collected: ' + this.world.averageFoodCollected + '   ' +
+			'Most Fit: ' + this.world.mostFit,
 			10, 20);
 	}
 }

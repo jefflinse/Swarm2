@@ -8,7 +8,7 @@ function Creature(network, world, x, y)
 
 	this.radius = 5;
 	this.linearMaxSpeed = 4;
-	this.rotationalMaxSpeed = Math.PI;
+	this.rotationalMaxSpeed = Math.PI / 6;
 	this.maxEnergy = 10;
 
 	this.location = new Vector(x, y);
@@ -35,8 +35,6 @@ Creature.prototype = {
 
 		// assign all input values
 		var inputs = [];
-		inputs.push(this.velocity.magnitude());
-		inputs.push(this.velocity.angle());
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
 		inputs.push(this.nearestCreature.magnitude());
