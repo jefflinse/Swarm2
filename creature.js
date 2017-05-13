@@ -2,7 +2,7 @@ function Creature(network, world, x, y)
 {
 	this.network = network;
 	this.world = world;
-	this.energy = 5;
+	this.energy = 10;
 	this.foodEaten = 0;
 	this.scanRadius = 50;
 
@@ -59,7 +59,8 @@ Creature.prototype = {
 		this.velocity.setMagnitude(ds);
 		this.velocity.rotate(da);
 		this.location.add(this.velocity);
-		this.energy -= .2 * ((ds / this.linearMaxSpeed) + (da / Math.PI * 2));
+
+		this.energy -= Math.abs(.2 * (ds / this.linearMaxSpeed)) + Math.abs(.2 * (da / Math.PI * 2));
 	},
 
 	interact: function()
@@ -103,7 +104,7 @@ Creature.prototype = {
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
-		this.energy = Math.min(this.maxEnergy, this.energy + 2);
+		this.energy = Math.min(this.maxEnergy, this.energy + 1);
 	},
 
 	attackCreature: function(creatureId) {
@@ -185,7 +186,7 @@ Creature.prototype = {
 
 	fitness: function()
 	{
-		return this.isAlive() ? this.foodEaten / this.ticks : 0;
+		return this.isAlive() ? this.foodEaten : 0;
 	},
 
 	isAlive: function()
@@ -197,6 +198,6 @@ Creature.prototype = {
 	{
 		this.ticks = 0;
 		this.foodEaten = 0;
-		this.energy = 5;
+		this.energy = this.maxEnergy;
 	}
 }
