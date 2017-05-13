@@ -18,9 +18,8 @@ function Overlay(world) {
 		ctx.fillText(
 			'Era: ' + this.world.era + '   ' +
 			'Generation: ' + this.world.generation + '   ' +
-			'Species: ' + this.world.numSpecies + '   ' +
-			'Avg. Food Collected: ' + this.world.averageFoodCollected + '   ' +
-			'Most Fit: ' + this.world.mostFit,
+			'Creatures: ' + this.world.creatures.length + '   ' +
+			'Species: ' + this.world.numSpecies,
 			10, 20);
 	}
 }

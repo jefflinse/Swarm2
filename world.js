@@ -4,6 +4,7 @@ function World(numCreatures, canvas, synaptic) {
 	this.width = canvas.width;
 	this.height = canvas.height;
 	this.ctx = canvas.getContext('2d');
+	this.maxCreatures = numCreatures;
 
 	// populate
 	this.creatures = function (numCreatures, synaptic) {
@@ -98,24 +99,34 @@ function World(numCreatures, canvas, synaptic) {
 			console.log("new generation");
 			that.generation++;
 
+			// collect stats
+
+
+			// remove dead creatures
+			that.creatures = that.creatures.filter(function (creature) {
+				return creature.isAlive();
+			});
+
 			// sort by fitness
 			that.creatures.sort(function (a, b) {
 				return b.fitness() - a.fitness();
 			});
 
-			var totalFoodCollected = 0;
-			var colors = {};
-			for (var i = 0; i < that.creatures.length; i++) {
-				totalFoodCollected += that.creatures[i].foodEaten;
-				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
+			// remove unfit
+			while (that.creatures.length > that.maxCreatures / 2) {
+				that.creatures.pop();
 			}
 
-			that.mostFit = that.creatures[0].fitness();
-			that.averageFoodCollected = (totalFoodCollected / that.creatures.length);
+			// reproduce
+			var numToClone = that.creatures.length;
+			for (var i = 0; i < numToClone; i++) {
+				that.creatures.push(that.creatures[i].clone());
+			}
 
-			var halfLength = that.creatures.length / 2;
-			for (var i = 0; i < halfLength; i++) {
-				that.creatures[i + halfLength] = that.creatures[i].clone();
+			// collect stats
+			var colors = {};
+			for (var i = 0; i < that.creatures.length; i++) {
+				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
 			}
 
 			that.numSpecies = Object.keys(colors).length;
