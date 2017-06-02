@@ -4,12 +4,7 @@ function Creature(network, world, x, y)
 	this.world = world;
 	this.energy = 10;
 	this.foodEaten = 0;
-	this.scanRadius = 50;
-
-	this.radius = 5;
-	this.linearMaxSpeed = 4;
-	this.angularMaxSpeed = Math.PI / 6;
-	this.maxEnergy = 1;
+	
 
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
@@ -24,6 +19,12 @@ function Creature(network, world, x, y)
 }
 
 Creature.prototype = {
+
+	radius:           5,
+	scanRadius:       50,
+	maxEnergy:        1,
+	linearMaxSpeed:   4,
+	angularMaxSpeed:  Math.PI / 6,
 
 	tick: function()
 	{
