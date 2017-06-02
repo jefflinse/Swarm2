@@ -2,10 +2,9 @@ function Creature(network, world, x, y)
 {
 	this.network = network;
 	this.world = world;
-	this.energy = 10;
+	this.energy = 1;
 	this.foodEaten = 0;
 	
-
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
 
