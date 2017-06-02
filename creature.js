@@ -8,8 +8,8 @@ function Creature(network, world, x, y)
 
 	this.radius = 5;
 	this.linearMaxSpeed = 4;
-	this.rotationalMaxSpeed = Math.PI / 6;
-	this.maxEnergy = 10;
+	this.angularMaxSpeed = Math.PI / 6;
+	this.maxEnergy = 1;
 
 	this.location = new Vector(x, y);
 	this.velocity = new Vector(0, 0);
@@ -55,12 +55,12 @@ Creature.prototype = {
 	{
 		// first two network outputs specify the multipliers for deltas in distance and rotation
 		let ds = networkOutput[0] * this.linearMaxSpeed;
-		let da = networkOutput[1] * this.rotationalMaxSpeed;
+		let da = networkOutput[1] * this.angularMaxSpeed;
 		this.velocity.setMagnitude(ds);
 		this.velocity.rotate(da);
 		this.location.add(this.velocity);
 
-		this.energy -= Math.abs(.2 * (ds / this.linearMaxSpeed)) + Math.abs(.2 * (da / Math.PI * 2));
+		this.energy -= Math.abs(.01 * (ds / this.linearMaxSpeed)) + Math.abs(.01 * (da / this.angularMaxSpeed));
 	},
 
 	interact: function()
@@ -104,7 +104,7 @@ Creature.prototype = {
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
-		this.energy = Math.min(this.maxEnergy, this.energy + 1);
+		this.energy = Math.min(this.maxEnergy, this.energy + .1);
 	},
 
 	attackCreature: function(creatureId) {
