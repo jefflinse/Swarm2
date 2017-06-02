@@ -21,8 +21,6 @@ function Creature(network, world, x, y)
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ',' +
 		Math.floor(Math.random() * 255) + ')';
-
-	this.ticks = 1;
 }
 
 Creature.prototype = {
@@ -47,8 +45,6 @@ Creature.prototype = {
 
 		// interact with the world and other creatures
 		this.interact();
-
-		this.ticks++;
 	},
 
 	processOutputs: function(networkOutput)
@@ -60,7 +56,7 @@ Creature.prototype = {
 		this.velocity.rotate(da);
 		this.location.add(this.velocity);
 
-		this.energy -= Math.abs(.01 * (ds / this.linearMaxSpeed)) + Math.abs(.01 * (da / this.angularMaxSpeed));
+		this.energy -= Math.abs(.02 * (ds / this.linearMaxSpeed)) + Math.abs(.02 * (da / this.angularMaxSpeed));
 	},
 
 	interact: function()
@@ -196,7 +192,6 @@ Creature.prototype = {
 
 	reset: function()
 	{
-		this.ticks = 0;
 		this.foodEaten = 0;
 		this.energy = this.maxEnergy;
 	}
