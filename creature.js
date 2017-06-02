@@ -1,3 +1,5 @@
+'use strict';
+
 function Creature(network, world, x, y)
 {
 	this.network = network;

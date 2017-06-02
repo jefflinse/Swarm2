@@ -1,3 +1,5 @@
+'use strict';
+
 function World(numCreatures, canvas, synaptic) {
 	var that = this;
 
@@ -60,7 +62,7 @@ function World(numCreatures, canvas, synaptic) {
 
 	var loop = function () {
 
-		applyFadeEffect();
+		drawBackground();
 
 		// add food
 		for (var i = 0; i < that.food.length; i++) {
@@ -69,15 +71,8 @@ function World(numCreatures, canvas, synaptic) {
 			}
 
 			if (that.food[i].x === null || that.food[i].y === null) {
-				var x = Math.random() * (that.width - 100) + 50;
-				var y = Math.random() * (that.height - 100) + 50;
-				while (x > (that.width / 2) - (that.width / 6) && x < (that.width / 2) + (that.width / 6) &&
-					y > (that.height / 2) - (that.height / 6) && y < (that.height / 2) + (that.height / 6)) {
-					x = Math.random() * (that.width - 100) + 50;
-					y = Math.random() * (that.height - 100) + 50;
-				}
-				that.food[i].x = x;
-				that.food[i].y = y;
+				that.food[i].x = Math.random() * (that.width - 100) + 50;
+				that.food[i].y = Math.random() * (that.height - 100) + 50;
 			}
 
 			that.ctx.beginPath();
@@ -149,6 +144,7 @@ function World(numCreatures, canvas, synaptic) {
 			});
 
 			that.creatures = newCreatures;
+			that.ticks = 1;
 		}
 
 		that.overlay.draw();
@@ -156,7 +152,7 @@ function World(numCreatures, canvas, synaptic) {
 		setTimeout(loop, 10);
 	}
 
-	var applyFadeEffect = function () {
+	var drawBackground = function () {
 		//that.ctx.globalAlpha = 0.2;
 		that.ctx.fillStyle = '#f4f4f4';
 		that.ctx.fillRect(0, 0, that.width, that.height);

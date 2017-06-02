@@ -1,3 +1,5 @@
+'use strict';
+
 function Overlay(world) {
 
 	this.world = world;

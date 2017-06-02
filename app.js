@@ -1,3 +1,5 @@
+'use strict';
+
 function start(numCreatures)
 {
 	var synaptic = require('synaptic');
