@@ -23,7 +23,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(5, 25, 2);
+			var network = new synaptic.Architect.Perceptron(5, 10, 15, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -99,34 +99,33 @@ function World(numCreatures, canvas, synaptic) {
 			console.log("new generation");
 			that.generation++;
 
-			// collect stats
-
-
-			// remove dead creatures
-			that.creatures = that.creatures.filter(function (creature) {
+			// remove dead creatures and sort remaining by fitness
+			var newCreatures = that.creatures.filter(function (creature) {
 				return creature.isAlive();
-			});
-
-			// sort by fitness
-			that.creatures.sort(function (a, b) {
+			}).sort(function (a, b) {
 				return b.fitness() - a.fitness();
 			});
+			console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
 
 			// remove unfit
-			while (that.creatures.length > that.maxCreatures / 2) {
-				that.creatures.pop();
+			var numUnfitRemoved = 0;
+			while (newCreatures.length > that.maxCreatures / 2) {
+				newCreatures.pop();
+				++numUnfitRemoved;
 			}
+			console.log("Removed " + numUnfitRemoved + " unfit creatures");
 
 			// reproduce
-			var numToClone = that.creatures.length;
+			var numToClone = newCreatures.length;
 			for (var i = 0; i < numToClone; i++) {
-				that.creatures.push(that.creatures[i].clone());
+				newCreatures.push(newCreatures[i].clone());
 			}
+			console.log(numToClone + " creatures reproduced");
 
 			// collect stats
 			var colors = {};
-			for (var i = 0; i < that.creatures.length; i++) {
-				colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
+			for (var i = 0; i < newCreatures.length; i++) {
+				colors[newCreatures[i].color] = colors[newCreatures[i].color] ? colors[newCreatures[i].color]++ : 1;
 			}
 
 			that.numSpecies = Object.keys(colors).length;
@@ -134,8 +133,8 @@ function World(numCreatures, canvas, synaptic) {
 				that.era++;
 
 				// randomize colors
-				for (var i = 0; i < that.creatures.length; i++) {
-					that.creatures[i].color = 'rgb(' +
+				for (var i = 0; i < newCreatures.length; i++) {
+					newCreatures[i].color = 'rgb(' +
 						Math.floor(Math.random() * 255) + ',' +
 						Math.floor(Math.random() * 255) + ',' +
 						Math.floor(Math.random() * 255) + ')';
@@ -143,6 +142,13 @@ function World(numCreatures, canvas, synaptic) {
 
 				that.numSpecies = that.numCreatures;
 			}
+
+			// reset
+			newCreatures.forEach(function (creature) {
+				creature.reset();
+			});
+
+			that.creatures = newCreatures;
 		}
 
 		that.overlay.draw();
