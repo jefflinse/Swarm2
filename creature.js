@@ -11,7 +11,6 @@ function Creature(network, world, x, y)
 	this.velocity = new Vector(0, 0);
 
 	this.nearestFood = this.location;
-	this.nearestCreature = this.location;
 	
 	this.color = 'rgb(' +
 		Math.floor(Math.random() * 255) + ',' +
@@ -38,8 +37,6 @@ Creature.prototype = {
 		inputs.push(this.energy);
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
-		inputs.push(this.nearestCreature.magnitude());
-		inputs.push(this.nearestCreature.angle());
 		inputs.push(this.velocity.magnitude());
 		inputs.push(this.velocity.angle());
 
@@ -84,32 +81,12 @@ Creature.prototype = {
 				}
 			}
 		}
-
-		// fight
-		for (var i in this.world.creatures) {
-			if (this.world.creatures[i] !== this && this.world.creatures[i].isAlive()) {
-				let distanceToCreature = this.location.distanceBetween(this.world.creatures[i].location);
-				if (distanceToCreature <= this.radius + this.world.creatures[i].radius &&
-					this.velocity.magnitude() > this.world.creatures[i].velocity.magnitude()) {
-					this.attackCreature(i);
-				}
-				else if (distanceToCreature <= distanceToNearestCreature) {
-					this.nearestCreature = this.world.creatures[i].location.copy().subtract(this.location);
-					distanceToNearestCreature = distanceToCreature;
-				}
-			}
-		}
 	},
 
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
 		this.energy = Math.min(this.maxEnergy, this.energy + .1);
-	},
-
-	attackCreature: function(creatureId) {
-		this.energy = this.maxEnergy;
-		this.world.creatures[creatureId].energy = 0; // kill it
 	},
 
 	clone: function()
@@ -168,17 +145,6 @@ Creature.prototype = {
 			this.world.ctx.strokeStyle = 'rgba(150, 150, 150, .5)';
 			this.world.ctx.moveTo(this.location.x, this.location.y);
 			var absolutePosition = this.location.copy().add(this.nearestFood);
-			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
-			this.world.ctx.stroke();
-		}
-
-		// draw line to nearest creature
-		if (this.nearestCreature.magnitude() < this.scanRadius) {
-			this.world.ctx.lineWidth = 1;
-			this.world.ctx.beginPath();
-			this.world.ctx.strokeStyle = 'rgba(255, 0, 0, .25)';
-			this.world.ctx.moveTo(this.location.x, this.location.y);
-			var absolutePosition = this.location.copy().add(this.nearestCreature);
 			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
 			this.world.ctx.stroke();
 		}
