@@ -40,6 +40,8 @@ Creature.prototype = {
 		inputs.push(this.nearestFood.angle());
 		inputs.push(this.nearestCreature.magnitude());
 		inputs.push(this.nearestCreature.angle());
+		inputs.push(this.velocity.magnitude());
+		inputs.push(this.velocity.angle());
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
