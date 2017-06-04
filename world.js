@@ -25,7 +25,7 @@ function World(numCreatures, canvas, synaptic) {
 			var x = Math.random() * (that.width - 100) + 50;
 			var y = Math.random() * (that.height - 100) + 50;
 
-			var network = new synaptic.Architect.Perceptron(5, 4, 3, 2);
+			var network = new synaptic.Architect.Perceptron(5, 10, 2);
 
 			// randomize the activation functions
 			network.neurons().forEach(function (neuron) {
@@ -89,67 +89,70 @@ function World(numCreatures, canvas, synaptic) {
 
 		that.ticks++;
 
-		if (that.ticks % 300 == 0) {
-
-			console.log("new generation");
-			that.generation++;
-
-			// remove dead creatures and sort remaining by fitness
-			var newCreatures = that.creatures.filter(function (creature) {
-				return creature.isAlive();
-			}).sort(function (a, b) {
-				return b.fitness() - a.fitness();
-			});
-			console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
-
-			// remove unfit
-			var numUnfitRemoved = 0;
-			while (newCreatures.length > that.maxCreatures / 2) {
-				newCreatures.pop();
-				++numUnfitRemoved;
-			}
-			console.log("Removed " + numUnfitRemoved + " unfit creatures");
-
-			// reproduce
-			var numToClone = newCreatures.length;
-			for (var i = 0; i < numToClone; i++) {
-				newCreatures.push(newCreatures[i].clone());
-			}
-			console.log(numToClone + " creatures reproduced");
-
-			// collect stats
-			var colors = {};
-			for (var i = 0; i < newCreatures.length; i++) {
-				colors[newCreatures[i].color] = colors[newCreatures[i].color] ? colors[newCreatures[i].color]++ : 1;
-			}
-
-			that.numSpecies = Object.keys(colors).length;
-			if (that.numSpecies == 1) {
-				that.era++;
-
-				// randomize colors
-				for (var i = 0; i < newCreatures.length; i++) {
-					newCreatures[i].color = 'rgb(' +
-						Math.floor(Math.random() * 255) + ',' +
-						Math.floor(Math.random() * 255) + ',' +
-						Math.floor(Math.random() * 255) + ')';
-				}
-
-				that.numSpecies = that.numCreatures;
-			}
-
-			// reset
-			newCreatures.forEach(function (creature) {
-				creature.reset();
-			});
-
-			that.creatures = newCreatures;
-			that.ticks = 1;
+		if (that.ticks % 300 === 0) {
+			newGeneration();
 		}
 
 		that.overlay.draw();
 		
 		setTimeout(loop, 10);
+	}
+
+	var newGeneration = function () {
+		console.log("new generation");
+		that.generation++;
+
+		// remove dead creatures and sort remaining by fitness
+		var newCreatures = that.creatures.filter(function (creature) {
+			return creature.isAlive();
+		}).sort(function (a, b) {
+			return b.fitness() - a.fitness();
+		});
+		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
+
+		// remove unfit
+		var numUnfitRemoved = 0;
+		while (newCreatures.length > that.maxCreatures / 2) {
+			newCreatures.pop();
+			++numUnfitRemoved;
+		}
+		console.log("Removed " + numUnfitRemoved + " unfit creatures");
+
+		// reproduce
+		var numToClone = newCreatures.length;
+		for (var i = 0; i < numToClone; i++) {
+			newCreatures.push(newCreatures[i].clone());
+		}
+		console.log(numToClone + " creatures reproduced");
+
+		// collect stats
+		var colors = {};
+		for (var i = 0; i < newCreatures.length; i++) {
+			colors[newCreatures[i].color] = colors[newCreatures[i].color] ? colors[newCreatures[i].color]++ : 1;
+		}
+
+		that.numSpecies = Object.keys(colors).length;
+		if (that.numSpecies == 1) {
+			that.era++;
+
+			// randomize colors
+			for (var i = 0; i < newCreatures.length; i++) {
+				newCreatures[i].color = 'rgb(' +
+					Math.floor(Math.random() * 255) + ',' +
+					Math.floor(Math.random() * 255) + ',' +
+					Math.floor(Math.random() * 255) + ')';
+			}
+
+			that.numSpecies = that.numCreatures;
+		}
+
+		// reset
+		newCreatures.forEach(function (creature) {
+			creature.reset();
+		});
+
+		that.creatures = newCreatures;
+		that.ticks = 1;
 	}
 
 	var drawBackground = function () {
