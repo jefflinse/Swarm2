@@ -109,10 +109,6 @@ Creature.prototype = {
 		creature.velocity.random();
 		creature.color = this.color;
 
-		// bad
-		this.reset();
-		creature.reset();
-
 		return creature;
 	},
 
