@@ -150,6 +150,19 @@ Creature.prototype = {
 		}
 	},
 
+	highlight: function()
+	{
+		// draw a semitransparent "halo" around the creature, to make it stand out
+		this.world.ctx.save();
+		this.world.ctx.lineWidth = 1;
+		this.world.ctx.fillStyle = this.color;
+		this.world.ctx.globalAlpha = .2;
+		this.world.ctx.beginPath();
+		this.world.ctx.arc(this.location.x, this.location.y, this.radius * 5, 0, 2 * Math.PI);
+		this.world.ctx.fill();
+		this.world.ctx.restore();
+	},
+
 	fitness: function()
 	{
 		return this.isAlive() ? this.foodEaten : 0;

@@ -87,6 +87,8 @@ function World(numCreatures, canvas, synaptic) {
 			creature.draw();
 		});
 
+		that.creatures[0].isAlive() && that.creatures[0].highlight();
+
 		that.ticks++;
 
 		if (that.ticks % 300 === 0) {
