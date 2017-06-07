@@ -96,8 +96,6 @@ function World(numCreatures, canvas, synaptic) {
 		}
 
 		that.overlay.draw();
-		
-		setTimeout(loop, 10);
 	}
 
 	var newGeneration = function () {
@@ -164,6 +162,6 @@ function World(numCreatures, canvas, synaptic) {
 
 	this.start = function() {
 
-		return loop();
+		setInterval(loop, 10);
 	}
 }
