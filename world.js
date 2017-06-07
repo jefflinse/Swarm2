@@ -63,8 +63,23 @@ function World(numCreatures, canvas, synaptic) {
 	var loop = function () {
 
 		drawBackground();
+		populateFood();
+		updateCreatures();
 
-		// add food
+		that.ticks++;
+		if (that.ticks % 500 === 0) {
+			newGeneration();
+		}
+
+		that.overlay.draw();
+	}
+
+	var drawBackground = function () {
+		that.ctx.fillStyle = '#f4f4f4';
+		that.ctx.fillRect(0, 0, that.width, that.height);
+	}
+
+	var populateFood = function () {
 		for (var i = 0; i < that.food.length; i++) {
 			if (that.food[i] === null) {
 				that.food[i] = new Vector(null, null);
@@ -80,22 +95,15 @@ function World(numCreatures, canvas, synaptic) {
 			that.ctx.arc(that.food[i].x, that.food[i].y, 3, 0, 2 * Math.PI);
 			that.ctx.fill();
 		}
+	}
 
-		// update each creature
+	var updateCreatures = function () {
 		that.creatures.forEach(function (creature) {
 			creature.tick();
 			creature.draw();
 		});
 
 		that.creatures[0].isAlive() && that.creatures[0].highlight();
-
-		that.ticks++;
-
-		if (that.ticks % 300 === 0) {
-			newGeneration();
-		}
-
-		that.overlay.draw();
 	}
 
 	var newGeneration = function () {
@@ -143,7 +151,7 @@ function World(numCreatures, canvas, synaptic) {
 					Math.floor(Math.random() * 255) + ')';
 			}
 
-			that.numSpecies = that.numCreatures;
+			that.numSpecies = newCreatures.length;
 		}
 
 		// reset
@@ -153,11 +161,6 @@ function World(numCreatures, canvas, synaptic) {
 
 		that.creatures = newCreatures;
 		that.ticks = 1;
-	}
-
-	var drawBackground = function () {
-		that.ctx.fillStyle = '#f4f4f4';
-		that.ctx.fillRect(0, 0, that.width, that.height);
 	}
 
 	this.start = function() {
