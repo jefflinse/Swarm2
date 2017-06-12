@@ -6,7 +6,11 @@ function World(numCreatures, canvas, synaptic) {
 	this.width = canvas.width;
 	this.height = canvas.height;
 	this.ctx = canvas.getContext('2d');
+
+	// configuration (this should be externalized at some point...)
 	this.maxCreatures = numCreatures;
+	this.tickIntervalInMs = 10;
+	this.generationLengthInSec = 5;
 
 	// populate
 	this.creatures = function (numCreatures, synaptic) {
@@ -57,6 +61,7 @@ function World(numCreatures, canvas, synaptic) {
 	that.averageFoodCollected = 0;
 	this.numSpecies = numCreatures;
 	this.ticks = 1;
+	this.ticksPerGeneration = this.generationLengthInSec * 1000 / this.tickIntervalInMs;
 
 	this.overlay = new Overlay(this);
 
@@ -67,7 +72,7 @@ function World(numCreatures, canvas, synaptic) {
 		updateCreatures();
 
 		that.ticks++;
-		if (that.ticks % 500 === 0) {
+		if (that.ticks % that.ticksPerGeneration === 0) {
 			newGeneration();
 		}
 
@@ -165,6 +170,6 @@ function World(numCreatures, canvas, synaptic) {
 
 	this.start = function() {
 
-		setInterval(loop, 10);
+		setInterval(loop, that.tickIntervalInMs);
 	}
 }
