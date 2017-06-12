@@ -57,8 +57,6 @@ function World(numCreatures, canvas, synaptic) {
 
 	this.generation = 1;
 	this.era = 1;
-	that.mostFit = 0;
-	that.averageFoodCollected = 0;
 	this.numSpecies = numCreatures;
 	this.ticks = 1;
 	this.ticksPerGeneration = this.generationLengthInSec * 1000 / this.tickIntervalInMs;
