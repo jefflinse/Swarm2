@@ -65,9 +65,6 @@ Creature.prototype = {
 		this.nearestFood = new Vector(0, 0);
 		var distanceToNearestFood = this.scanRadius + 1;
 
-		this.nearestCreature = new Vector(0, 0);
-		var distanceToNearestCreature = this.scanRadius + 1;
-
 		// eat
 		for (var i in this.world.food) {
 			if (this.world.food[i].x !== null && this.world.food[i].y !== null) {
