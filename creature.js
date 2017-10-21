@@ -1,14 +1,34 @@
 'use strict';
 
-function Creature(network, world, x, y)
+var Synaptic = require('synaptic');
+var Vector =require('./vector');
+
+function Creature(world)
 {
-	this.network = network;
+	var that = this;
+
+	this.network = new Synaptic.Architect.Perceptron(5, 4, 3, 2);
+
+	// randomize the activation functions
+	this.network.neurons().forEach(function (neuron) {
+		if (neuron.layer === 'output') {
+			// force all outputs to [-1, 1]
+			neuron.neuron.squash = synaptic.Neuron.squash.TANH;
+		}
+		else {
+			// input and hidden layers can use any activation function
+			neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
+		}
+	});
+
 	this.world = world;
 	this.energy = 1;
 	this.foodEaten = 0;
 	
+	var x = Math.random() * (this.world.width - 100) + 50;
+	var y = Math.random() * (this.world.height - 100) + 50;
 	this.location = new Vector(x, y);
-	this.velocity = new Vector(0, 0);
+	this.velocity = new Vector(0, 0).random();
 
 	this.nearestFood = this.location;
 	
@@ -25,6 +45,13 @@ Creature.prototype = {
 	maxEnergy:        1,
 	linearMaxSpeed:   4,
 	angularMaxSpeed:  Math.PI / 6,
+
+	squashingFunctions: [
+		Synaptic.Neuron.squash.LOGISTIC,
+		Synaptic.Neuron.squash.TANH,
+		Synaptic.Neuron.squash.HLIM,
+		Synaptic.Neuron.squash.IDENTITY
+	],
 
 	tick: function()
 	{
@@ -90,7 +117,7 @@ Creature.prototype = {
 	{
 		var x = Math.random() * this.world.width;
 		var y = Math.random() * this.world.height;
-		var creature = new Creature(this.network.clone(), this.world, x, y);
+		var creature = new Creature(this.world);
 		
 		var neurons = creature.network.neurons();
 		for (var i in neurons) {
@@ -103,7 +130,6 @@ Creature.prototype = {
 			}
 		}
 
-		creature.velocity.random();
 		creature.color = this.color;
 
 		return creature;
@@ -172,3 +198,5 @@ Creature.prototype = {
 		this.energy = this.maxEnergy;
 	}
 }
+
+module.exports = Creature;

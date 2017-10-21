@@ -10,5 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "synaptic": "^1.0.8"
+  },
+  "devDependencies": {
+    "ajv": "^5.2.3",
+    "eslint": "^4.9.0",
+    "eslint-config-eslint": "^4.0.0"
   }
 }

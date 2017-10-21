@@ -25,3 +25,5 @@ function Overlay(world) {
 			10, 20);
 	}
 }
+
+module.exports = Overlay;

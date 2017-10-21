@@ -1,14 +1,14 @@
 'use strict';
 
+var World = require('./world');
+
 function start(numCreatures)
 {
-	var synaptic = require('synaptic');
-
 	var canvas = document.getElementById('canvas');
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	var world = new World(numCreatures, canvas, synaptic);
+	var world = new World(numCreatures, canvas);
 	world.start();
 };
 

@@ -1,6 +1,10 @@
 'use strict';
 
-function World(numCreatures, canvas, synaptic) {
+var Creature = require('./creature');
+var Overlay = require('./overlay')
+var Vector = require('./vector')
+
+function World(numCreatures, canvas) {
 	var that = this;
 
 	this.width = canvas.width;
@@ -13,41 +17,10 @@ function World(numCreatures, canvas, synaptic) {
 	this.generationLengthInSec = 5;
 
 	// populate
-	this.creatures = function (numCreatures, synaptic) {
-
-		var squashingFunctions = [
-			synaptic.Neuron.squash.LOGISTIC,
-			synaptic.Neuron.squash.TANH,
-			synaptic.Neuron.squash.HLIM,
-			synaptic.Neuron.squash.IDENTITY
-		];
-
-		var creatures = [];
-
-		for (var i = 0; i < numCreatures; i++) {
-
-			var x = Math.random() * (that.width - 100) + 50;
-			var y = Math.random() * (that.height - 100) + 50;
-
-			var network = new synaptic.Architect.Perceptron(5, 4, 3, 2);
-
-			// randomize the activation functions
-			network.neurons().forEach(function (neuron) {
-				if (neuron.layer === 'output') {
-					neuron.neuron.squash = synaptic.Neuron.squash.TANH;
-				}
-				else {
-					neuron.neuron.squash = squashingFunctions[Math.floor(Math.random() * squashingFunctions.length)];
-				}
-			});
-
-			creatures[i] = new Creature(network, that, x, y);
-			creatures[i].velocity.random();
-		}
-
-		return creatures;
-
-	}(numCreatures, synaptic);
+	this.creatures = [];
+	for (var i = 0; i < numCreatures; i++) {
+		this.creatures[i] = new Creature(that);
+	}
 
 	this.foodDensity = .001;
 	this.food = [];
@@ -171,3 +144,5 @@ function World(numCreatures, canvas, synaptic) {
 		setInterval(loop, that.tickIntervalInMs);
 	}
 }
+
+module.exports = World;

@@ -130,3 +130,5 @@ Vector.prototype = {
 		return this;
 	}
 }
+
+module.exports = Vector;
