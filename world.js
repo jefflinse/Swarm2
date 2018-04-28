@@ -1,15 +1,15 @@
 'use strict';
 
 var Creature = require('./creature');
-var Overlay = require('./overlay')
-var Vector = require('./vector')
+var Graphics = require('./graphics');
+var Vector = require('./vector');
 
 function World(numCreatures, canvas) {
 	var that = this;
 
 	this.width = canvas.width;
 	this.height = canvas.height;
-	this.ctx = canvas.getContext('2d');
+	this.graphics = new Graphics(canvas.getContext('2d'), this.width, this.height);
 
 	// configuration (this should be externalized at some point...)
 	this.maxCreatures = numCreatures;
@@ -34,11 +34,9 @@ function World(numCreatures, canvas) {
 	this.ticks = 1;
 	this.ticksPerGeneration = this.generationLengthInSec * 1000 / this.tickIntervalInMs;
 
-	this.overlay = new Overlay(this);
-
 	var loop = function () {
 
-		drawBackground();
+		that.graphics.drawBackground();
 		populateFood();
 		updateCreatures();
 
@@ -47,12 +45,11 @@ function World(numCreatures, canvas) {
 			newGeneration();
 		}
 
-		that.overlay.draw();
-	}
-
-	var drawBackground = function () {
-		that.ctx.fillStyle = '#f4f4f4';
-		that.ctx.fillRect(0, 0, that.width, that.height);
+		that.graphics.drawOverlay(
+			'Era: ' + that.era + '   ' +
+			'Generation: ' + that.generation + '   ' +
+			'Creatures: ' + that.creatures.length + '   ' +
+			'Species: ' + that.numSpecies);
 	}
 
 	var populateFood = function () {
@@ -66,10 +63,9 @@ function World(numCreatures, canvas) {
 				that.food[i].y = Math.random() * (that.height - 100) + 50;
 			}
 
-			that.ctx.beginPath();
-			that.ctx.fillStyle = '#DDDDDD';
-			that.ctx.arc(that.food[i].x, that.food[i].y, 3, 0, 2 * Math.PI);
-			that.ctx.fill();
+			that.graphics.drawCircle(that.food[i], 3, {
+				fillStyle: '#DDDDDD',
+			});
 		}
 	}
 

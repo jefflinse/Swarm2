@@ -1,5 +1,6 @@
 'use strict';
 
+var Graphics = require('./graphics');
 var Synaptic = require('synaptic');
 var Vector =require('./vector');
 
@@ -22,6 +23,7 @@ function Creature(world)
 	});
 
 	this.world = world;
+	this.graphics = world.graphics;
 	this.reset();
 	
 	var x = Math.random() * (this.world.width - 100) + 50;
@@ -127,45 +129,38 @@ Creature.prototype = {
 
 	draw: function()
 	{
-		this.world.ctx.lineWidth = 1;
-		this.world.ctx.beginPath();
-		this.world.ctx.fillStyle = this.color;
-		this.world.ctx.arc(this.location.x, this.location.y, this.radius, 0, 2 * Math.PI);
-		this.world.ctx.fill();
+		this.graphics.drawCircle(this.location, this.radius, {
+			fillStyle: this.color,
+			globalAlpha: 1,
+			lineWidth: 1
+		});
 
 		// draw pointer (to show what direction the creature is facing)
-		this.world.ctx.lineWidth = 3;
-		this.world.ctx.beginPath();
-		this.world.ctx.strokeStyle = 'black';
-		this.world.ctx.moveTo(this.location.x, this.location.y);
-		var relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
-		var absolutePosition = this.location.copy().add(relativeTarget);
-		this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
-		this.world.ctx.stroke();
+		let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
+		let absoluteTarget = this.location.copy().add(relativeTarget);
+		this.graphics.drawLine(this.location, absoluteTarget, {
+			lineWidth: 3,
+			strokeStyle: 'black',
+		});
 
 		// draw line to nearest food
 		if (this.nearestFood.magnitude() < this.scanRadius) {
-			this.world.ctx.lineWidth = 1;
-			this.world.ctx.beginPath();
-			this.world.ctx.strokeStyle = 'rgba(150, 150, 150, .5)';
-			this.world.ctx.moveTo(this.location.x, this.location.y);
-			var absolutePosition = this.location.copy().add(this.nearestFood);
-			this.world.ctx.lineTo(absolutePosition.x, absolutePosition.y);
-			this.world.ctx.stroke();
+			let absolutePosition = this.location.copy().add(this.nearestFood);
+			this.graphics.drawLine(this.location, absolutePosition, {
+				lineWidth: 1,
+				strokeStyle: 'rgba(150, 150, 150, .5)',
+			});
 		}
 	},
 
 	highlight: function()
 	{
 		// draw a semitransparent "halo" around the creature, to make it stand out
-		this.world.ctx.save();
-		this.world.ctx.lineWidth = 1;
-		this.world.ctx.fillStyle = this.color;
-		this.world.ctx.globalAlpha = .2;
-		this.world.ctx.beginPath();
-		this.world.ctx.arc(this.location.x, this.location.y, this.radius * 5, 0, 2 * Math.PI);
-		this.world.ctx.fill();
-		this.world.ctx.restore();
+		this.graphics.drawCircle(this.location, this.radius * 5, {
+			lineWidth: 1,
+			fillStyle: this.color,
+			globalAlpha: .2,
+		})
 	},
 
 	fitness: function()
