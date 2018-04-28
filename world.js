@@ -82,11 +82,10 @@ function World(numCreatures, canvas) {
 		console.log("new generation");
 		that.generation++;
 
-		// remove dead creatures and sort remaining by fitness
+		// sort creatures by fitness
 		var newCreatures = that.creatures.sort(function (a, b) {
 			return b.fitness() - a.fitness();
 		});
-		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
 
 		// remove unfit
 		var numUnfitRemoved = 0;
