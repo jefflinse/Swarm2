@@ -1,38 +1,33 @@
 'use strict';
 
+var Config = require('./config');
 var Creature = require('./creature');
 var Graphics = require('./graphics');
 var Vector = require('./vector');
 
-function World(numCreatures, canvas) {
+function World(canvas) {
 	var that = this;
 
 	this.width = canvas.width;
 	this.height = canvas.height;
 	this.graphics = new Graphics(canvas.getContext('2d'), this.width, this.height);
 
-	// configuration (this should be externalized at some point...)
-	this.maxCreatures = numCreatures;
-	this.tickIntervalInMs = 10;
-	this.generationLengthInSec = 5;
-
 	// populate
 	this.creatures = [];
-	for (var i = 0; i < numCreatures; i++) {
+	for (var i = 0; i < Config.World.MaxCreatures; i++) {
 		this.creatures[i] = new Creature(that);
 	}
 
-	this.foodDensity = .001;
 	this.food = [];
-	for (var i = 0; i < (this.width * this.height * this.foodDensity); i++) {
+	for (var i = 0; i < (this.width * this.height * Config.World.FoodDensity); i++) {
 		this.food.push(null);
 	}
 
 	this.generation = 1;
 	this.era = 1;
-	this.numSpecies = numCreatures;
+	this.numSpecies = this.creatures.length;
 	this.ticks = 1;
-	this.ticksPerGeneration = this.generationLengthInSec * 1000 / this.tickIntervalInMs;
+	this.ticksPerGeneration = Config.World.GenerationLengthInSec * 1000 / Config.World.TickIntervalInMs;
 
 	var loop = function () {
 
@@ -106,7 +101,7 @@ function World(numCreatures, canvas) {
 		console.log(numToClone + " creatures reproduced");
 
 		// make sure we have 100 creatures by cloning the best ones again
-		numToClone = that.maxCreatures - newCreatures.length;
+		numToClone = Config.World.MaxCreatures - newCreatures.length;
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
 		}
@@ -144,7 +139,7 @@ function World(numCreatures, canvas) {
 
 	this.start = function() {
 
-		setInterval(loop, that.tickIntervalInMs);
+		setInterval(loop, Config.TickIntervalInMs);
 	}
 }
 

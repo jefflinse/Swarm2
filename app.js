@@ -6,4 +6,4 @@ var canvas = document.getElementById('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-new World(100, canvas).start();
+new World(canvas).start();

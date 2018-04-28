@@ -1,12 +1,22 @@
 'use strict';
 
+var plusOrMinus = function (value) {
+    return (Math.random() * value * 2) - value;
+}
+
 var Config = {
     ChanceOf: {
         ConnectionWeightChange: .25,
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => (Math.random() * .1) - .05,
+        RandomConnectionWeightChange: () => plusOrMinus(.1),
     },
+    World: {
+        FoodDensity: .001,
+        GenerationLengthInSec: 5,
+        MaxCreatures: 100,
+        TickIntervalInMs: 10,
+    }
 };
 
 module.exports = Config;
