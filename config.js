@@ -2,10 +2,10 @@
 
 var Config = {
     ChanceOf: {
-        ConnectionWeightChange: .3,
+        ConnectionWeightChange: .25,
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => (Math.random() * .2) - .1,
+        RandomConnectionWeightChange: () => (Math.random() * .1) - .05,
     },
 };
 

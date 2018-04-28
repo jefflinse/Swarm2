@@ -83,9 +83,12 @@ function World(numCreatures, canvas) {
 		that.generation++;
 
 		// sort creatures by fitness
-		var newCreatures = that.creatures.sort(function (a, b) {
+		var newCreatures = that.creatures.filter(creature => {
+			return creature.fitness() > 0;
+		}).sort(function (a, b) {
 			return b.fitness() - a.fitness();
 		});
+		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
 
 		// remove unfit
 		var numUnfitRemoved = 0;
@@ -101,6 +104,13 @@ function World(numCreatures, canvas) {
 			newCreatures.push(newCreatures[i].clone());
 		}
 		console.log(numToClone + " creatures reproduced");
+
+		// make sure we have 100 creatures by cloning the best ones again
+		numToClone = that.maxCreatures - newCreatures.length;
+		for (var i = 0; i < numToClone; i++) {
+			newCreatures.push(newCreatures[i].clone());
+		}
+		console.log(numToClone + " creatures reproduced a second time");
 
 		// collect stats
 		var colors = {};
