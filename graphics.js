@@ -15,12 +15,12 @@ Graphics.prototype = {
     height: 0,
 
     _preDraw: function (props) {
-        //this.ctx.save();
+        this.ctx.save();
         Object.assign(this.ctx, props);
     },
 
     _postDraw: function () {
-        //this.ctx.restore();
+        this.ctx.restore();
     },
 
     drawBackground: function () {
@@ -53,7 +53,7 @@ Graphics.prototype = {
         this._postDraw();
     },
 
-    drawOverlay: function (text) {
+    drawOverlay: function (text, props) {
         this._preDraw(props);
 
         // transparent background for overlay
