@@ -7,7 +7,7 @@ function Creature(world)
 {
 	var that = this;
 
-	this.network = new Synaptic.Architect.Perceptron(5, 4, 3, 2);
+	this.network = new Synaptic.Architect.Perceptron(4, 4, 3, 2);
 
 	// randomize the activation functions
 	this.network.neurons().forEach(function (neuron) {
@@ -22,8 +22,7 @@ function Creature(world)
 	});
 
 	this.world = world;
-	this.energy = 1;
-	this.foodEaten = 0;
+	this.reset();
 	
 	var x = Math.random() * (this.world.width - 100) + 50;
 	var y = Math.random() * (this.world.height - 100) + 50;
@@ -42,7 +41,6 @@ Creature.prototype = {
 
 	radius:           5,
 	scanRadius:       50,
-	maxEnergy:        1,
 	linearMaxSpeed:   4,
 	angularMaxSpeed:  Math.PI / 6,
 
@@ -55,13 +53,8 @@ Creature.prototype = {
 
 	tick: function()
 	{
-		if (!this.isAlive()) {
-			return;
-		}
-
 		// assign all input values
 		var inputs = [];
-		inputs.push(this.energy);
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
 		inputs.push(this.velocity.magnitude());
@@ -83,8 +76,6 @@ Creature.prototype = {
 		this.velocity.setMagnitude(ds);
 		this.velocity.rotate(da);
 		this.location.add(this.velocity);
-
-		this.energy -= Math.abs(.02 * (ds / this.linearMaxSpeed)) + Math.abs(.02 * (da / this.angularMaxSpeed));
 	},
 
 	interact: function()
@@ -110,7 +101,6 @@ Creature.prototype = {
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.foodEaten++;
-		this.energy = Math.min(this.maxEnergy, this.energy + .1);
 	},
 
 	clone: function()
@@ -137,10 +127,6 @@ Creature.prototype = {
 
 	draw: function()
 	{
-		if (!this.isAlive()) {
-			return;
-		}
-
 		this.world.ctx.lineWidth = 1;
 		this.world.ctx.beginPath();
 		this.world.ctx.fillStyle = this.color;
@@ -184,18 +170,12 @@ Creature.prototype = {
 
 	fitness: function()
 	{
-		return this.isAlive() ? this.foodEaten : 0;
-	},
-
-	isAlive: function()
-	{
-		return this.energy > 0;
+		return this.foodEaten;
 	},
 
 	reset: function()
 	{
 		this.foodEaten = 0;
-		this.energy = this.maxEnergy;
 	}
 }
 

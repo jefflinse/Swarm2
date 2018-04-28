@@ -79,7 +79,7 @@ function World(numCreatures, canvas) {
 			creature.draw();
 		});
 
-		that.creatures[0].isAlive() && that.creatures[0].highlight();
+		that.creatures[0].highlight();
 	}
 
 	var newGeneration = function () {
@@ -87,9 +87,7 @@ function World(numCreatures, canvas) {
 		that.generation++;
 
 		// remove dead creatures and sort remaining by fitness
-		var newCreatures = that.creatures.filter(function (creature) {
-			return creature.isAlive();
-		}).sort(function (a, b) {
+		var newCreatures = that.creatures.sort(function (a, b) {
 			return b.fitness() - a.fitness();
 		});
 		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
