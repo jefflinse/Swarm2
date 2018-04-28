@@ -1,5 +1,6 @@
 'use strict';
 
+var Config = require('./config');
 var Graphics = require('./graphics');
 var Synaptic = require('synaptic');
 var Vector =require('./vector');
@@ -116,8 +117,8 @@ Creature.prototype = {
 			var neuron = neurons[i].neuron;
 			for (var j in neuron.connections.projected) {
 				var connection = neuron.connections.projected[j];
-				if (Math.random() < .3) {
-					connection.weight += (Math.random() * .2) - .1;
+				if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
+					connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
 				}
 			}
 		}
