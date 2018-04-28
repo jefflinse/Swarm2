@@ -9,7 +9,7 @@ function Creature(world)
 {
 	var that = this;
 
-	this.network = new Synaptic.Architect.Perceptron(4, 4, 3, 2);
+	this.network = new Synaptic.Architect.Perceptron(2, 5, 2);
 
 	// randomize the activation functions
 	this.network.neurons().forEach(function (neuron) {
@@ -60,8 +60,6 @@ Creature.prototype = {
 		var inputs = [];
 		inputs.push(this.nearestFood.magnitude());
 		inputs.push(this.nearestFood.angle());
-		inputs.push(this.velocity.magnitude());
-		inputs.push(this.velocity.angle());
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
