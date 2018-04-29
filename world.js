@@ -85,21 +85,18 @@ function World(canvas) {
 			// sort by best
 			return b.fitness() - a.fitness();
 		}).slice(0, Config.World.MaxCreatures / 2);
-		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead/unfit creatures");
 
 		// reproduce
 		var numToClone = Math.min(Config.World.MaxCreatures / 2, newCreatures.length);
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
 		}
-		console.log(numToClone + " creatures reproduced");
 
 		// make sure we have 100 creatures by cloning the best ones again
 		numToClone = Config.World.MaxCreatures - newCreatures.length;
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
 		}
-		numToClone > 0 && console.log(numToClone + " creatures reproduced a second time");
 
 		// collect stats
 		var colors = {};
