@@ -12,6 +12,9 @@ var Config = {
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinus(.1),
     },
+    Probability: {
+        GlobalMutationRate: .5,
+    },
     World: {
         FoodDensity: .001,
         GenerationLengthInSec: 5,

@@ -79,19 +79,13 @@ function World(canvas) {
 
 		// sort creatures by fitness
 		var newCreatures = that.creatures.filter(creature => {
+			// remove "dead" creatures
 			return creature.fitness() > 0;
 		}).sort((a, b) => {
+			// sort by best
 			return b.fitness() - a.fitness();
-		});
-		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
-
-		// remove unfit
-		var numUnfitRemoved = 0;
-		while (newCreatures.length > that.maxCreatures / 2) {
-			newCreatures.pop();
-			++numUnfitRemoved;
-		}
-		console.log("Removed " + numUnfitRemoved + " unfit creatures");
+		}).slice(0, Config.World.MaxCreatures / 2);
+		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead/unfit creatures");
 
 		// reproduce
 		var numToClone = Math.min(Config.World.MaxCreatures / 2, newCreatures.length);

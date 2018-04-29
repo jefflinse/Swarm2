@@ -5,23 +5,29 @@ var Graphics = require('./graphics');
 var Synaptic = require('synaptic');
 var Vector =require('./vector');
 
-function Creature(world)
+function Creature(world, specifics)
 {
 	var that = this;
+	specifics = specifics || {};
 
-	this.network = new Synaptic.Architect.Perceptron(4, 10, 2);
+	if (specifics.network !== undefined ) {
+		this.network = specifics.network;
+	}
+	else {
+		this.network = new Synaptic.Architect.Perceptron(4, 10, 2);
 
-	// randomize the activation functions
-	this.network.neurons().forEach(function (neuron) {
-		if (neuron.layer === 'output') {
-			// force all outputs to [-1, 1]
-			neuron.neuron.squash = synaptic.Neuron.squash.TANH;
-		}
-		else {
-			// input and hidden layers can use any activation function
-			neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
-		}
-	});
+		// randomize the activation functions
+		this.network.neurons().forEach(function (neuron) {
+			if (neuron.layer === 'output') {
+				// force all outputs to [-1, 1]
+				neuron.neuron.squash = synaptic.Neuron.squash.TANH;
+			}
+			else {
+				// input and hidden layers can use any activation function
+				neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
+			}
+		});
+	}
 
 	this.world = world;
 	this.graphics = this.world.graphics;
@@ -33,11 +39,16 @@ function Creature(world)
 	this.velocity = new Vector(0, 0).random();
 
 	this.nearestFood = this.location;
-	
-	this.color = 'rgb(' +
-		Math.floor(Math.random() * 255) + ',' +
-		Math.floor(Math.random() * 255) + ',' +
-		Math.floor(Math.random() * 255) + ')';
+
+	if (specifics.color !== undefined) {
+		this.color = specifics.color;
+	}
+	else {
+		this.color = 'rgb(' +
+			Math.floor(Math.random() * 255) + ',' +
+			Math.floor(Math.random() * 255) + ',' +
+			Math.floor(Math.random() * 255) + ')';
+	}
 }
 
 Creature.prototype = {
@@ -108,30 +119,32 @@ Creature.prototype = {
 
 	clone: function()
 	{
-		var x = Math.random() * this.world.width;
-		var y = Math.random() * this.world.height;
-		var creature = new Creature(this.world);
+		var creature = new Creature(this.world, {
+			network: this.network.clone(),
+			color: this.color,
+		});
 		
-		var neurons = creature.network.neurons();
-		for (var i in neurons) {
-			let neuron = neurons[i].neuron;
-			let layer = neurons[i].layer;
+		// mutations
+		if (Math.random() < Config.Probability.GlobalMutationRate) {
+			let neurons = creature.network.neurons();
+			for (var i in neurons) {
+				let neuron = neurons[i].neuron;
+				let layer = neurons[i].layer;
 
-			// random connection weight mutation
-			for (var j in neuron.connections.projected) {
-				var connection = neuron.connections.projected[j];
-				if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
-					connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
+				// random connection weight mutation
+				for (var j in neuron.connections.projected) {
+					let connection = neuron.connections.projected[j];
+					if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
+						connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
+					}
+				}
+
+				// random activation function mutation
+				if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
+					neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
 				}
 			}
-
-			// random activation function mutation
-			if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
-				neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
-			}
 		}
-
-		creature.color = this.color;
 
 		return creature;
 	},
