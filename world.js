@@ -65,7 +65,7 @@ function World(canvas) {
 	}
 
 	var updateCreatures = function () {
-		that.creatures.forEach(function (creature) {
+		that.creatures.forEach(creature => {
 			creature.tick();
 			creature.draw();
 		});
@@ -80,7 +80,7 @@ function World(canvas) {
 		// sort creatures by fitness
 		var newCreatures = that.creatures.filter(creature => {
 			return creature.fitness() > 0;
-		}).sort(function (a, b) {
+		}).sort((a, b) => {
 			return b.fitness() - a.fitness();
 		});
 		console.log("Removed " + (that.creatures.length - newCreatures.length) + " dead creatures");
@@ -94,7 +94,7 @@ function World(canvas) {
 		console.log("Removed " + numUnfitRemoved + " unfit creatures");
 
 		// reproduce
-		var numToClone = newCreatures.length;
+		var numToClone = Math.min(Config.World.MaxCreatures / 2, newCreatures.length);
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
 		}
@@ -105,7 +105,7 @@ function World(canvas) {
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
 		}
-		console.log(numToClone + " creatures reproduced a second time");
+		numToClone > 0 && console.log(numToClone + " creatures reproduced a second time");
 
 		// collect stats
 		var colors = {};
@@ -129,7 +129,7 @@ function World(canvas) {
 		}
 
 		// reset
-		newCreatures.forEach(function (creature) {
+		newCreatures.forEach((creature) => {
 			creature.reset();
 		});
 

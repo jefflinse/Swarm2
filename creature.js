@@ -9,7 +9,7 @@ function Creature(world)
 {
 	var that = this;
 
-	this.network = new Synaptic.Architect.Perceptron(4, 8, 5, 2);
+	this.network = new Synaptic.Architect.Perceptron(4, 10, 2);
 
 	// randomize the activation functions
 	this.network.neurons().forEach(function (neuron) {
@@ -24,7 +24,7 @@ function Creature(world)
 	});
 
 	this.world = world;
-	this.graphics = world.graphics;
+	this.graphics = this.world.graphics;
 	this.reset();
 	
 	var x = Math.random() * (this.world.width - 100) + 50;
