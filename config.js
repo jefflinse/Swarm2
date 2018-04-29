@@ -1,6 +1,14 @@
 'use strict';
 
+var coinFlip = function () {
+    return Math.random() < 0.5;
+}
+
 var plusOrMinus = function (value) {
+    return coinFlip() ? value : -value;
+}
+
+var plusOrMinusMax = function (value) {
     return (Math.random() * value * 2) - value;
 }
 
@@ -8,6 +16,7 @@ var Config = {
     ChanceOf: {
         ActivationFunctionChange: .1,
         ConnectionWeightChange: .25,
+        ScanRadiusChange: .1,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
@@ -15,7 +24,8 @@ var Config = {
         StartingScanRadius: 50,
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => plusOrMinus(.1),
+        RandomConnectionWeightChange: () => plusOrMinusMax(.1),
+        RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
         GlobalMutationRate: .5,

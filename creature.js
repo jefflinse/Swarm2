@@ -40,6 +40,10 @@ function Creature(world, specifics)
 
 	this.nearestFood = this.location;
 
+	if (specifics.scanRadius !== undefined) {
+		this.scanRadius = specifics.scanRadius;
+	}
+
 	if (specifics.color !== undefined) {
 		this.color = specifics.color;
 	}
@@ -120,6 +124,7 @@ Creature.prototype = {
 		var creature = new Creature(this.world, {
 			network: this.network.clone(),
 			color: this.color,
+			scanRadius: this.scanRadius,
 		});
 		
 		// mutations
@@ -141,6 +146,11 @@ Creature.prototype = {
 				if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
 					neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
 				}
+			}
+
+			// scan radius mutation
+			if (Math.random() < Config.ChanceOf.ScanRadiusChange) {
+				creature.scanRadius += Config.Fluxuation.RandomScanRadiusChange();
 			}
 		}
 
@@ -176,7 +186,7 @@ Creature.prototype = {
 	highlight: function()
 	{
 		// draw a semitransparent "halo" around the creature, to make it stand out
-		this.graphics.drawCircle(this.location, this.radius * 5, {
+		this.graphics.drawCircle(this.location, this.scanRadius, {
 			lineWidth: 1,
 			fillStyle: this.color,
 			globalAlpha: .2,
