@@ -114,12 +114,20 @@ Creature.prototype = {
 		
 		var neurons = creature.network.neurons();
 		for (var i in neurons) {
-			var neuron = neurons[i].neuron;
+			let neuron = neurons[i].neuron;
+			let layer = neurons[i].layer;
+
+			// random connection weight mutation
 			for (var j in neuron.connections.projected) {
 				var connection = neuron.connections.projected[j];
 				if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
 					connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
 				}
+			}
+
+			// random activation function mutation
+			if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
+				neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
 			}
 		}
 

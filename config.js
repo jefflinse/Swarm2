@@ -6,6 +6,7 @@ var plusOrMinus = function (value) {
 
 var Config = {
     ChanceOf: {
+        ActivationFunctionChange: .1,
         ConnectionWeightChange: .25,
     },
     Fluxuation: {
