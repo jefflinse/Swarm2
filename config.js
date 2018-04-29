@@ -9,10 +9,15 @@ var Config = {
         ActivationFunctionChange: .1,
         ConnectionWeightChange: .25,
     },
+    Creature: {
+        AngularMaxSpeed: Math.PI / 6,
+        LinearMaxSpeed: 2,
+        StartingScanRadius: 50,
+    },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinus(.1),
     },
-    Probability: {
+    Mutation: {
         GlobalMutationRate: .5,
     },
     World: {

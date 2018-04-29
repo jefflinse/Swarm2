@@ -54,9 +54,7 @@ function Creature(world, specifics)
 Creature.prototype = {
 
 	radius:           5,
-	scanRadius:       50,
-	linearMaxSpeed:   4,
-	angularMaxSpeed:  Math.PI / 6,
+	scanRadius:       Config.Creature.StartingScanRadius,
 
 	squashingFunctions: [
 		Synaptic.Neuron.squash.LOGISTIC,
@@ -85,8 +83,8 @@ Creature.prototype = {
 	processOutputs: function(networkOutput)
 	{
 		// first two network outputs specify the multipliers for deltas in distance and rotation
-		let ds = networkOutput[0] * this.linearMaxSpeed;
-		let da = networkOutput[1] * this.angularMaxSpeed;
+		let ds = networkOutput[0] * Config.Creature.LinearMaxSpeed;
+		let da = networkOutput[1] * Config.Creature.AngularMaxSpeed;
 		this.velocity.setMagnitude(ds);
 		this.velocity.rotate(da);
 		this.location.add(this.velocity);
@@ -125,7 +123,7 @@ Creature.prototype = {
 		});
 		
 		// mutations
-		if (Math.random() < Config.Probability.GlobalMutationRate) {
+		if (Math.random() < Config.Mutation.GlobalMutationRate) {
 			let neurons = creature.network.neurons();
 			for (var i in neurons) {
 				let neuron = neurons[i].neuron;
