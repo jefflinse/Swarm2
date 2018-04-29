@@ -25,6 +25,7 @@ var Config = {
         GenerationLengthInSec: 5,
         MaxCreatures: 100,
         TickIntervalInMs: 10,
+        ReproductionPercentile: .5,
     }
 };
 

@@ -84,7 +84,7 @@ function World(canvas) {
 		}).sort((a, b) => {
 			// sort by best
 			return b.fitness() - a.fitness();
-		}).slice(0, Config.World.MaxCreatures / 2);
+		}).slice(0, Math.floor(Config.World.MaxCreatures * Config.World.ReproductionPercentile));
 
 		// reproduce
 		var numToClone = Math.min(Config.World.MaxCreatures / 2, newCreatures.length);
@@ -92,7 +92,7 @@ function World(canvas) {
 			newCreatures.push(newCreatures[i].clone());
 		}
 
-		// make sure we have 100 creatures by cloning the best ones again
+		// make sure we have max creatures by cloning the best ones again
 		numToClone = Config.World.MaxCreatures - newCreatures.length;
 		for (var i = 0; i < numToClone; i++) {
 			newCreatures.push(newCreatures[i].clone());
