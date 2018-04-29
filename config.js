@@ -10,8 +10,8 @@ var Config = {
         ConnectionWeightChange: .25,
     },
     Creature: {
-        AngularMaxSpeed: Math.PI / 6,
-        LinearMaxSpeed: 2,
+        AngularMaxSpeed: Math.PI / 3,
+        LinearMaxSpeed: 1,
         StartingScanRadius: 50,
     },
     Fluxuation: {
