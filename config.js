@@ -22,6 +22,8 @@ var Config = {
         AngularMaxSpeed: Math.PI / 3,
         LinearMaxSpeed: 1,
         StartingScanRadius: 50,
+        MaxStartingParts: 2,
+        PartDistance: 15,
     },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinusMax(.1),

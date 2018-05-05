@@ -5,6 +5,34 @@ var Graphics = require('./graphics');
 var Synaptic = require('synaptic');
 var Vector =require('./vector');
 
+function Part(creature, specifics) {
+	var that = this;
+	specifics = specifics || {};
+
+	this.creature = creature;
+
+	if (specifics.relativePosition !== undefined) {
+		this.relativePosition = specifics.relativePosition;
+	}
+	else {
+		this.relativePosition = new Vector(0, 0);
+		this.relativePosition.setMagnitude(Config.Creature.PartDistance);
+		this.relativePosition.setAngle(Math.random() * Math.PI * 2);
+	}
+}
+
+Part.prototype = {
+
+	relativePosition: undefined,
+
+	clone: function (creature) {
+		return new Part(creature, {
+			relativePosition: this.relativePosition.copy(),
+			type: this.type,
+		})
+	},
+}
+
 function Creature(world, specifics)
 {
 	var that = this;
@@ -17,6 +45,7 @@ function Creature(world, specifics)
 		this.network = specifics.network;
 	}
 	else {
+		// random network
 		this.network = new Synaptic.Architect.Perceptron(4, 10, 2);
 
 		// randomize the activation functions
@@ -30,6 +59,19 @@ function Creature(world, specifics)
 				neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
 			}
 		});
+	}
+
+	if (specifics.parts !== undefined) {
+		this.parts = specifics.parts;
+	}
+	else {
+		// random parts
+		//let numParts = Math.floor(Math.random() * (Config.Creature.MaxStartingParts + 1));
+		let numParts = 1;
+		this.parts = [];
+		for (let i = 0; i < numParts; i++) {
+			this.parts.push(new Part(this));
+		}
 	}
 
 	this.reset();
@@ -61,6 +103,7 @@ Creature.prototype = {
 
 	radius:           5,
 	scanRadius:       Config.Creature.StartingScanRadius,
+	parts:            [],
 
 	squashingFunctions: [
 		Synaptic.Neuron.squash.LOGISTIC,
@@ -127,6 +170,11 @@ Creature.prototype = {
 			network: this.network.clone(),
 			color: this.color,
 			scanRadius: this.scanRadius,
+			parts: [],
+		});
+
+		this.parts.forEach(part => {
+			creature.parts.push(part.clone(creature));
 		});
 		
 		// mutations
@@ -161,11 +209,31 @@ Creature.prototype = {
 
 	draw: function()
 	{
+		// draw self
 		this.graphics.drawCircle(this.location, this.radius, {
 			fillStyle: this.color,
 			globalAlpha: 1,
 			lineWidth: 1
 		});
+
+		// draw parts
+		let parts = this.parts;
+		for (let i = 0; i < parts.length; i++) {
+			let partLocation = this.location.copy().add(parts[i].relativePosition);
+
+			// draw part
+			this.graphics.drawCircle(partLocation, this.radius / 2, {
+				fillStyle: this.color,
+				globalAlpha: .5,
+				lineWidth: 1,
+			});
+
+			// draw line to part
+			this.graphics.drawLine(this.location, partLocation, {
+				lineWidth: 2,
+				strokeStyle: 'rgba(50, 50, 50, .5)',
+			});
+		}
 
 		// draw pointer (to show what direction the creature is facing)
 		let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
