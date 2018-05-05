@@ -264,13 +264,6 @@ Creature.prototype = {
 
 	draw: function()
 	{
-		// draw self
-		this.graphics.drawCircle(this.location, this.radius, {
-			fillStyle: this.color,
-			globalAlpha: 1,
-			lineWidth: 1
-		});
-
 		// draw parts
 		let parts = this.parts;
 		for (let i = 0; i < parts.length; i++) {
@@ -279,7 +272,7 @@ Creature.prototype = {
 			// draw part
 			this.graphics.drawCircle(partLocation, parts[i].radius, {
 				fillStyle: this.color,
-				globalAlpha: .5,
+				globalAlpha: .35,
 				lineWidth: 1,
 			});
 
@@ -306,6 +299,13 @@ Creature.prototype = {
 				strokeStyle: 'rgba(150, 150, 150, .5)',
 			});
 		}
+
+		// draw self
+		this.graphics.drawCircle(this.location, this.radius, {
+			fillStyle: this.color,
+			globalAlpha: 1,
+			lineWidth: 1
+		});
 	},
 
 	highlight: function()
