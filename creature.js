@@ -69,7 +69,7 @@ Part.prototype = {
 		for (var i in this.creature.world.food) {
 			if (this.creature.world.food[i].x !== null) {
 				let distanceToFood = absolutePosition.distanceBetween(this.creature.world.food[i]);
-				if (distanceToFood <= this.radius) {
+				if (this.radius > Config.Creature.MinPartRadiusForConsumption && distanceToFood <= this.radius) {
 					this.creature.eatFood(i);
 				}
 				else if (distanceToFood <= distanceToNearestFood) {
