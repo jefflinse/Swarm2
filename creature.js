@@ -148,16 +148,17 @@ Creature.prototype = {
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
 
-		let dv = new Vector(0, 0);
+		this.velocity.set(0, 0);
 		for (let i = 0; i < this.parts.length; i++) {
 			let outputIndex = i * 2;
 			this.parts[i].inputs[0] = outputs[outputIndex];
 			this.parts[i].inputs[1] = outputs[outputIndex + 1];
 			this.parts[i].tick();
-			dv.add(this.parts[i].relativePosition);
+			this.velocity.add(this.parts[i].relativePosition);
 		}
 
-		this.velocity.add(dv).limit(Config.Creature.LinearMaxSpeed);
+		this.velocity.setMagnitude((this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed)
+		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
 
 		// interact with the world and other creatures
