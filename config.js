@@ -22,7 +22,7 @@ var Config = {
         AngularMaxSpeed: Math.PI / 3,
         LinearMaxSpeed: 1,
         StartingScanRadius: 50,
-        MaxStartingParts: 1,
+        MaxStartingParts: 3,
         PartDistance: 20,
         PartAngularMaxSpeed: Math.PI / 10,
         PartMaxContractionSpeed: 4,
