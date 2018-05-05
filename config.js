@@ -28,6 +28,7 @@ var Config = {
         PartDistance: 50,
         PartAngularMaxSpeed: Math.PI / 10,
         PartMaxContractionSpeed: 4,
+        MaxRadialChange: 5,
     },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinusMax(.1),

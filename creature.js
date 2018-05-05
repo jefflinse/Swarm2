@@ -28,9 +28,10 @@ function Part(creature, specifics) {
 		this.inputs = [];
 		this.inputs.push(0); // relative angle delta from creature
 		this.inputs.push(0); // relative length delta from creature
+		this.inputs.push(0); // relative radius delta
 	}
 
-	this.radius = this.creature.radius;
+	this.radius = specifics.radius || Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
 }
 
 Part.prototype = {
@@ -51,18 +52,8 @@ Part.prototype = {
 		this.relativePosition.rotate(da);
 		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
 
-		// part radius is a ratio of the creature's radius, depending on the length of the part
-		let length = this.relativePosition.magnitude();
-		let partLengthRatio = length / Config.Creature.PartDistance;
-		let fullSizeDistance = Config.Creature.PartDistance - this.creature.radius;
-		if (length <= fullSizeDistance) {
-			this.radius = this.creature.radius;
-		}
-		else {
-			let amountOverFullSizeDistance = length - fullSizeDistance;
-			let scaleRatio = amountOverFullSizeDistance / (fullSizeDistance - this.creature.radius);
-			this.radius = Math.min(3, this.creature.radius * scaleRatio);
-		}
+		let dr = this.inputs[2] * Config.Creature.MaxRadialChange;
+		this.radius = Math.max(3, Math.min(Config.Creature.StartingRadius, this.radius + dr));
 	},
 
 	interact: function () {
@@ -183,16 +174,23 @@ Creature.prototype = {
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
 
+		let totalWeight = 0;
 		this.velocity.set(0, 0);
 		for (let i = 0; i < this.parts.length; i++) {
-			let outputIndex = i * 2;
+			let outputIndex = i * 3;
 			this.parts[i].inputs[0] = outputs[outputIndex];
 			this.parts[i].inputs[1] = outputs[outputIndex + 1];
+			this.parts[i].inputs[2] = outputs[outputIndex + 2];
 			this.parts[i].tick();
 			this.velocity.add(this.parts[i].relativePosition.copy().invert());
+			totalWeight += this.parts[i].radius;
 		}
 
-		this.velocity.setMagnitude((this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed)
+		// limit magnitude based on overall radii ratio
+		let magnitude = (this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed;
+		let weightRatio = totalWeight / (this.parts.length * Config.Creature.StartingRadius);
+		magnitude = magnitude - (magnitude * weightRatio);
+		this.velocity.setMagnitude(magnitude);
 		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
 
