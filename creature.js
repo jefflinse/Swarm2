@@ -10,6 +10,9 @@ function Creature(world, specifics)
 	var that = this;
 	specifics = specifics || {};
 
+	this.world = world;
+	this.graphics = this.world.graphics;
+
 	if (specifics.network !== undefined ) {
 		this.network = specifics.network;
 	}
@@ -29,16 +32,15 @@ function Creature(world, specifics)
 		});
 	}
 
-	this.world = world;
-	this.graphics = this.world.graphics;
 	this.reset();
-	
-	var x = Math.random() * (this.world.width - 100) + 50;
-	var y = Math.random() * (this.world.height - 100) + 50;
-	this.location = new Vector(x, y);
-	this.velocity = new Vector(0, 0).random();
 
-	this.nearestFood = this.location;
+	this.velocity = new Vector(0, 0).random();
+	this.location = new Vector(
+		Math.random() * (this.world.width - 100) + 50,
+		Math.random() * (this.world.height - 100) + 50
+	);
+
+	this.nearestFood = new Vector(0, 0);
 
 	if (specifics.scanRadius !== undefined) {
 		this.scanRadius = specifics.scanRadius;

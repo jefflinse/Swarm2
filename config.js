@@ -14,9 +14,9 @@ var plusOrMinusMax = function (value) {
 
 var Config = {
     ChanceOf: {
-        ActivationFunctionChange: .1,
-        ConnectionWeightChange: .25,
-        ScanRadiusChange: .1,
+        ActivationFunctionChange: .15,
+        ConnectionWeightChange: .15,
+        ScanRadiusChange: .15,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
@@ -32,7 +32,7 @@ var Config = {
     },
     World: {
         FoodDensity: .001,
-        GenerationLengthInSec: 5,
+        GenerationLengthInSec: 10,
         MaxCreatures: 100,
         TickIntervalInMs: 10,
         ReproductionPercentile: .5,
