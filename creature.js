@@ -24,6 +24,7 @@ function Part(creature, specifics) {
 Part.prototype = {
 
 	relativePosition: undefined,
+	numInputs: 1, // relative angle to creature
 
 	clone: function (creature) {
 		return new Part(creature, {
@@ -31,6 +32,11 @@ Part.prototype = {
 			type: this.type,
 		})
 	},
+
+	tick: function (networkOutput) {
+		let da = networkOutput * Config.Creature.PartAngularMaxSpeed;
+		this.relativePosition.rotate(da);
+	}
 }
 
 function Creature(world, specifics)
@@ -41,33 +47,13 @@ function Creature(world, specifics)
 	this.world = world;
 	this.graphics = this.world.graphics;
 
-	if (specifics.network !== undefined ) {
-		this.network = specifics.network;
-	}
-	else {
-		// random network
-		this.network = new Synaptic.Architect.Perceptron(4, 10, 2);
-
-		// randomize the activation functions
-		this.network.neurons().forEach(function (neuron) {
-			if (neuron.layer === 'output') {
-				// force all outputs to [-1, 1]
-				neuron.neuron.squash = synaptic.Neuron.squash.TANH;
-			}
-			else {
-				// input and hidden layers can use any activation function
-				neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
-			}
-		});
-	}
-
 	if (specifics.parts !== undefined) {
 		this.parts = specifics.parts;
 	}
 	else {
 		// random parts
 		//let numParts = Math.floor(Math.random() * (Config.Creature.MaxStartingParts + 1));
-		let numParts = 1;
+		let numParts = 3;
 		this.parts = [];
 		for (let i = 0; i < numParts; i++) {
 			this.parts.push(new Part(this));
@@ -97,6 +83,30 @@ function Creature(world, specifics)
 			Math.floor(Math.random() * 255) + ',' +
 			Math.floor(Math.random() * 255) + ')';
 	}
+
+	if (specifics.network !== undefined) {
+		this.network = specifics.network;
+	}
+	else {
+		let numInputs = 4;
+		let numOutputs = 2 + this.parts.length;
+		let numHidden = Math.ceil((numInputs + numOutputs) / 2);
+
+		// random network
+		this.network = new Synaptic.Architect.Perceptron(4, 10, numOutputs);
+
+		// randomize the activation functions
+		this.network.neurons().forEach(function (neuron) {
+			if (neuron.layer === 'output') {
+				// force all outputs to [-1, 1]
+				neuron.neuron.squash = synaptic.Neuron.squash.TANH;
+			}
+			else {
+				// input and hidden layers can use any activation function
+				neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
+			}
+		});
+	}
 }
 
 Creature.prototype = {
@@ -123,7 +133,10 @@ Creature.prototype = {
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
-		this.processOutputs(outputs);
+		this.processOutputs(outputs); // outputs 0 and 1 are for velocity
+		for (let i = 0; i < this.parts.length; i++) {
+			this.parts[i].tick(outputs[2 + i]); // outputs 2+ are for parts
+		}
 
 		// interact with the world and other creatures
 		this.interact();

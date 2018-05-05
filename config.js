@@ -24,6 +24,7 @@ var Config = {
         StartingScanRadius: 50,
         MaxStartingParts: 2,
         PartDistance: 15,
+        PartAngularMaxSpeed: Math.PI / 10,
     },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinusMax(.1),
@@ -34,7 +35,7 @@ var Config = {
     },
     World: {
         FoodDensity: .001,
-        GenerationLengthInSec: 10,
+        GenerationLengthInSec: 5,
         MaxCreatures: 100,
         TickIntervalInMs: 10,
         ReproductionPercentile: .5,
