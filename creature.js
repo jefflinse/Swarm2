@@ -47,7 +47,7 @@ Part.prototype = {
 		let ds = this.inputs[0] * Config.Creature.PartMaxContractionSpeed;
 		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
 		this.relativePosition.rotate(da);
-		this.relativePosition.setMagnitude(this.relativePosition.magnitude()).limit(Config.Creature.PartDistance);
+		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
 	}
 }
 
