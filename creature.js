@@ -48,9 +48,13 @@ Part.prototype = {
 
 	tick: function () {
 		let ds = this.inputs[0] * Config.Creature.PartMaxContractionSpeed;
-		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
-		this.relativePosition.rotate(da);
 		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
+
+		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
+		// limit da by torque
+		let resistenceTorque = (this.radius / Config.Creature.StartingRadius) * (this.relativePosition.magnitude() / Config.Creature.PartDistance);
+		//let lossRatio = resistenceTorque / (Config.Creature.StartingRadius * Config.Creature.PartDistance);
+		this.relativePosition.rotate((1 - resistenceTorque) * da);
 
 		let dr = this.inputs[2] * Config.Creature.MaxRadialChange;
 		this.radius = Math.max(3, Math.min(Config.Creature.StartingRadius, this.radius + dr));
