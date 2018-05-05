@@ -64,8 +64,7 @@ function Creature(world, specifics)
 	}
 	else {
 		// random parts
-		//let numParts = Math.floor(Math.random() * (Config.Creature.MaxStartingParts + 1));
-		let numParts = 3;
+		let numParts = Math.floor(Math.random() * (Config.Creature.MaxStartingParts + 1));
 		this.parts = [];
 		for (let i = 0; i < numParts; i++) {
 			this.parts.push(new Part(this));
