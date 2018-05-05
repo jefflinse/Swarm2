@@ -272,14 +272,14 @@ Creature.prototype = {
 			// draw part
 			this.graphics.drawCircle(partLocation, parts[i].radius, {
 				fillStyle: this.color,
-				globalAlpha: .35,
+				globalAlpha: .30,
 				lineWidth: 1,
 			});
 
 			// draw line to part
 			this.graphics.drawLine(this.location, partLocation, {
 				lineWidth: 2,
-				strokeStyle: 'rgba(50, 50, 50, .5)',
+				strokeStyle: this.color,
 			});
 		}
 
@@ -299,6 +299,13 @@ Creature.prototype = {
 				strokeStyle: 'rgba(150, 150, 150, .5)',
 			});
 		}
+
+		// draw shadow
+		this.graphics.drawCircle(this.location.copy().add(new Vector(3, 3)), this.radius, {
+			fillStyle: 'rgb(0, 0, 0)',
+			globalAlpha: .2,
+			lineWidth: 1
+		});
 
 		// draw self
 		this.graphics.drawCircle(this.location, this.radius, {
