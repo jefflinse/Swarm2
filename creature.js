@@ -19,12 +19,22 @@ function Part(creature, specifics) {
 		this.relativePosition.setMagnitude(Config.Creature.PartDistance);
 		this.relativePosition.setAngle(Math.random() * Math.PI * 2);
 	}
+
+	// set up inputs (values from the neural network controlling the part)
+	if (specifics.inputs !== undefined) {
+		this.inputs = specifics.inputs;
+	}
+	else {
+		this.inputs = [];
+		this.inputs.push(0); // relative angle delta from creature
+		this.inputs.push(0); // relative length delta from creature
+	}
 }
 
 Part.prototype = {
 
 	relativePosition: undefined,
-	numInputs: 1, // relative angle to creature
+	inputs: undefined,
 
 	clone: function (creature) {
 		return new Part(creature, {
@@ -33,9 +43,11 @@ Part.prototype = {
 		})
 	},
 
-	tick: function (networkOutput) {
-		let da = networkOutput * Config.Creature.PartAngularMaxSpeed;
+	tick: function () {
+		let ds = this.inputs[0] * Config.Creature.PartMaxContractionSpeed;
+		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
 		this.relativePosition.rotate(da);
+		this.relativePosition.setMagnitude(this.relativePosition.magnitude()).limit(Config.Creature.PartDistance);
 	}
 }
 
@@ -133,23 +145,20 @@ Creature.prototype = {
 
 		// feed the neural network forward
 		var outputs = this.network.activate(inputs);
-		this.processOutputs(outputs); // outputs 0 and 1 are for velocity
-		for (let i = 0; i < this.parts.length; i++) {
-			this.parts[i].tick(outputs[2 + i]); // outputs 2+ are for parts
+
+		let dv = new Vector(0, 0);
+		for (let i = 0; i < this.parts.length; i += 2) {
+			this.parts[i].inputs[0] = outputs[i];
+			this.parts[i].inputs[1] = outputs[i + 1];
+			this.parts[i].tick(); // outputs 2+ are for parts
+			dv.add(this.parts[i].relativePosition);
 		}
+
+		this.velocity.add(dv).limit(Config.Creature.LinearMaxSpeed);
+		this.location.add(this.velocity);
 
 		// interact with the world and other creatures
 		this.interact();
-	},
-
-	processOutputs: function(networkOutput)
-	{
-		// first two network outputs specify the multipliers for deltas in distance and rotation
-		let ds = networkOutput[0] * Config.Creature.LinearMaxSpeed;
-		let da = networkOutput[1] * Config.Creature.AngularMaxSpeed;
-		this.velocity.setMagnitude(ds);
-		this.velocity.rotate(da);
-		this.location.add(this.velocity);
 	},
 
 	interact: function()
