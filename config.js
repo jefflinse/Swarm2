@@ -23,9 +23,9 @@ var Config = {
         LinearMaxSpeed: 1,
         StartingScanRadius: 50,
         MaxStartingParts: 2,
-        PartDistance: 15,
+        PartDistance: 20,
         PartAngularMaxSpeed: Math.PI / 10,
-        PartMaxContractionSpeed: 3,
+        PartMaxContractionSpeed: 4,
     },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinusMax(.1),

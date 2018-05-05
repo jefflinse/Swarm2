@@ -101,7 +101,10 @@ function Creature(world, specifics)
 	}
 	else {
 		let numInputs = 4;
-		let numOutputs = 2 + this.parts.length;
+		let numOutputs = 0;
+		this.parts.forEach(part => {
+			numOutputs += part.inputs.length; // distribute outputs to parts
+		});
 		let numHidden = Math.ceil((numInputs + numOutputs) / 2);
 
 		// random network
@@ -147,10 +150,11 @@ Creature.prototype = {
 		var outputs = this.network.activate(inputs);
 
 		let dv = new Vector(0, 0);
-		for (let i = 0; i < this.parts.length; i += 2) {
-			this.parts[i].inputs[0] = outputs[i];
-			this.parts[i].inputs[1] = outputs[i + 1];
-			this.parts[i].tick(); // outputs 2+ are for parts
+		for (let i = 0; i < this.parts.length; i++) {
+			let outputIndex = i * 2;
+			this.parts[i].inputs[0] = outputs[outputIndex];
+			this.parts[i].inputs[1] = outputs[outputIndex + 1];
+			this.parts[i].tick();
 			dv.add(this.parts[i].relativePosition);
 		}
 
@@ -257,13 +261,13 @@ Creature.prototype = {
 			});
 		}
 
-		// draw pointer (to show what direction the creature is facing)
-		let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
-		let absoluteTarget = this.location.copy().add(relativeTarget);
-		this.graphics.drawLine(this.location, absoluteTarget, {
-			lineWidth: 3,
-			strokeStyle: 'black',
-		});
+		// // draw pointer (to show what direction the creature is facing)
+		// let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
+		// let absoluteTarget = this.location.copy().add(relativeTarget);
+		// this.graphics.drawLine(this.location, absoluteTarget, {
+		// 	lineWidth: 3,
+		// 	strokeStyle: 'black',
+		// });
 
 		// draw line to nearest food
 		if (this.nearestFood.magnitude() < this.scanRadius) {
