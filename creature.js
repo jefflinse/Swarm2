@@ -228,6 +228,11 @@ Creature.prototype = {
 			if (Math.random() < Config.ChanceOf.ScanRadiusChange) {
 				creature.scanRadius += Config.Fluxuation.RandomScanRadiusChange();
 			}
+
+			// part generation
+			if (Math.random() < Config.ChanceOf.PartGeneration) {
+				creature.addPart(new Part(creature));
+			}
 		}
 
 		return creature;
@@ -287,6 +292,20 @@ Creature.prototype = {
 			fillStyle: this.color,
 			globalAlpha: .2,
 		})
+	},
+
+	addPart: function (part) {
+		this.parts.push(part);
+		for (let newNeuronIndex = 0; newNeuronIndex < part.inputs.length; newNeuronIndex++) {
+			let outputNeuron = new synaptic.Neuron();
+			outputNeuron.squash = synaptic.Neuron.squash.TANH;
+			// connect all hidden layer neurons to this new output neuron
+			for (let i = 0; i < this.network.layers.hidden[0].length; i++) {
+				let hiddenNeuron = this.network.layers.hidden[0][i].neuron;
+				hiddenNeuron.project(outputNeuron);
+			}
+			this.network.layers.output.add(outputNeuron);
+		}
 	},
 
 	fitness: function()
