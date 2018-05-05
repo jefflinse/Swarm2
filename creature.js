@@ -29,6 +29,8 @@ function Part(creature, specifics) {
 		this.inputs.push(0); // relative angle delta from creature
 		this.inputs.push(0); // relative length delta from creature
 	}
+
+	this.radius = this.creature.radius;
 }
 
 Part.prototype = {
@@ -48,6 +50,39 @@ Part.prototype = {
 		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
 		this.relativePosition.rotate(da);
 		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
+
+		// part radius is a ratio of the creature's radius, depending on the length of the part
+		let length = this.relativePosition.magnitude();
+		let partLengthRatio = length / Config.Creature.PartDistance;
+		let fullSizeDistance = Config.Creature.PartDistance - this.creature.radius;
+		if (length <= fullSizeDistance) {
+			this.radius = this.creature.radius;
+		}
+		else {
+			let amountOverFullSizeDistance = length - fullSizeDistance;
+			let scaleRatio = amountOverFullSizeDistance / (fullSizeDistance - this.creature.radius);
+			this.radius = Math.min(2, this.creature.radius * scaleRatio);
+		}
+	},
+
+	interact: function () {
+		this.creature.nearestFood = new Vector(0, 0);
+		var distanceToNearestFood = this.creature.scanRadius + 1;
+		let absolutePosition = this.creature.location.copy().add(this.relativePosition);
+
+		// eat
+		for (var i in this.creature.world.food) {
+			if (this.creature.world.food[i].x !== null) {
+				let distanceToFood = absolutePosition.distanceBetween(this.creature.world.food[i]);
+				if (distanceToFood <= this.radius) {
+					this.creature.eatFood(i);
+				}
+				else if (distanceToFood <= distanceToNearestFood) {
+					this.creature.nearestFood = this.creature.world.food[i].copy().subtract(absolutePosition);
+					distanceToNearestFood = distanceToFood;
+				}
+			}
+		}
 	}
 }
 
@@ -167,21 +202,8 @@ Creature.prototype = {
 
 	interact: function()
 	{
-		this.nearestFood = new Vector(0, 0);
-		var distanceToNearestFood = this.scanRadius + 1;
-
-		// eat
-		for (var i in this.world.food) {
-			if (this.world.food[i].x !== null && this.world.food[i].y !== null) {
-				let distanceToFood = this.location.distanceBetween(this.world.food[i]);
-				if (distanceToFood <= this.radius) {
-					this.eatFood(i);
-				}
-				else if (distanceToFood <= distanceToNearestFood) {
-					this.nearestFood = this.world.food[i].copy().subtract(this.location);
-					distanceToNearestFood = distanceToFood;
-				}
-			}
+		for (let i = 0; i < this.parts.length; i++) {
+			this.parts[i].interact();
 		}
 	},
 
@@ -253,7 +275,7 @@ Creature.prototype = {
 			let partLocation = this.location.copy().add(parts[i].relativePosition);
 
 			// draw part
-			this.graphics.drawCircle(partLocation, this.radius / 2, {
+			this.graphics.drawCircle(partLocation, parts[i].radius, {
 				fillStyle: this.color,
 				globalAlpha: .5,
 				lineWidth: 1,
