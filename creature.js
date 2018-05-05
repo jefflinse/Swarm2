@@ -66,7 +66,7 @@ Part.prototype = {
 	},
 
 	interact: function () {
-		this.creature.nearestFood = new Vector(0, 0);
+		this.creature.nearestFood.set(0, 0);
 		var distanceToNearestFood = this.creature.scanRadius + 1;
 		let absolutePosition = this.creature.location.copy().add(this.relativePosition);
 
@@ -78,7 +78,7 @@ Part.prototype = {
 					this.creature.eatFood(i);
 				}
 				else if (distanceToFood <= distanceToNearestFood) {
-					this.creature.nearestFood = this.creature.world.food[i].copy().subtract(absolutePosition);
+					this.creature.nearestFood = this.creature.world.food[i].copy().subtract(this.creature.location);
 					distanceToNearestFood = distanceToFood;
 				}
 			}
