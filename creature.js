@@ -93,7 +93,7 @@ function Creature(world, specifics)
 		let numHidden = Math.ceil((numInputs + numOutputs) / 2);
 
 		// random network
-		this.network = new Synaptic.Architect.Perceptron(4, 10, numOutputs);
+		this.network = new Synaptic.Architect.Perceptron(numInputs, numHidden, numOutputs);
 
 		// randomize the activation functions
 		this.network.neurons().forEach(function (neuron) {
