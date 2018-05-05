@@ -189,7 +189,7 @@ Creature.prototype = {
 			this.parts[i].inputs[0] = outputs[outputIndex];
 			this.parts[i].inputs[1] = outputs[outputIndex + 1];
 			this.parts[i].tick();
-			this.velocity.add(this.parts[i].relativePosition);
+			this.velocity.add(this.parts[i].relativePosition.copy().invert());
 		}
 
 		this.velocity.setMagnitude((this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed)

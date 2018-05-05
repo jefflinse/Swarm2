@@ -118,6 +118,12 @@ Vector.prototype = {
 		return Math.sqrt(dx * dx + dy * dy);
 	},
 
+	invert: function() {
+		this.x = -this.x;
+		this.y = -this.y;
+		return this;
+	},
+
 	copy: function()
 	{
 		return new Vector(this.x, this.y);
