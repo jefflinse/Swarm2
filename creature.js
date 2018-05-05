@@ -61,7 +61,7 @@ Part.prototype = {
 		else {
 			let amountOverFullSizeDistance = length - fullSizeDistance;
 			let scaleRatio = amountOverFullSizeDistance / (fullSizeDistance - this.creature.radius);
-			this.radius = Math.min(2, this.creature.radius * scaleRatio);
+			this.radius = Math.min(3, this.creature.radius * scaleRatio);
 		}
 	},
 
@@ -160,7 +160,7 @@ function Creature(world, specifics)
 
 Creature.prototype = {
 
-	radius:           5,
+	radius:           Config.Creature.StartingRadius,
 	scanRadius:       Config.Creature.StartingScanRadius,
 	parts:            [],
 
