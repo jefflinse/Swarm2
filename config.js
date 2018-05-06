@@ -17,7 +17,7 @@ var Config = {
         ActivationFunctionChange: .15,
         ConnectionWeightChange: .15,
         ScanRadiusChange: .15,
-        PartGeneration: .30,
+        PartGeneration: .05,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
@@ -40,8 +40,8 @@ var Config = {
     },
     World: {
         FoodDensity: .0002,
-        GenerationLengthInSec: 5,
-        MaxCreatures: 100,
+        GenerationLengthInSec: 10,
+        MaxCreatures: 50,
         TickIntervalInMs: 10,
         ReproductionPercentile: .5,
     }

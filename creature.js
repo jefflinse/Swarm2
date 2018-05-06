@@ -1,8 +1,8 @@
 'use strict';
 
+var Brain = require('./brain');
 var Config = require('./config');
 var Graphics = require('./graphics');
-var Synaptic = require('synaptic');
 var Vector =require('./vector');
 
 function Part(creature, specifics) {
@@ -20,49 +20,57 @@ function Part(creature, specifics) {
 		this.relativePosition.setAngle(Math.random() * Math.PI * 2);
 	}
 
-	// set up inputs (values from the neural network controlling the part)
-	if (specifics.inputs !== undefined) {
-		this.inputs = specifics.inputs;
-	}
-	else {
-		this.inputs = [];
-		this.inputs.push(0); // relative angle delta from creature
-		this.inputs.push(0); // relative length delta from creature
-		this.inputs.push(0); // relative radius delta
-	}
+	this.sensors = [
+		{ value: 0 }, // relative distance to nearest food
+		{ value: 0 }, // relative angle of nearest food
+	]
 
-	this.radius = specifics.radius || Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
+	this.muscles = [
+		{ value: 0 }, // relative angle delta from creature
+		{ value: 0 }, // relative length delta from creature
+		{ value: 0 }, // relative radius delta
+	];
+
+	this.radius = Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
+	this.scanRadius = Config.Creature.StartingScanRadius;
+	this.nearestFood = new Vector(0, 0);
 }
 
 Part.prototype = {
 
+	creature: undefined,
 	relativePosition: undefined,
-	inputs: undefined,
+	sensors: undefined,
+	muscles: undefined,
+	radius: undefined,
+	scanRadius: undefined,
+	nearestFood: undefined,
 
 	clone: function (creature) {
 		return new Part(creature, {
 			relativePosition: this.relativePosition.copy(),
-			type: this.type,
-		})
+		});
 	},
 
 	tick: function () {
-		let ds = this.inputs[0] * Config.Creature.PartMaxContractionSpeed;
+		let muscleIndex = 0;
+		let ds = this.muscles[muscleIndex++].value * Config.Creature.PartMaxContractionSpeed;
+		let da = this.muscles[muscleIndex++].value * Config.Creature.PartAngularMaxSpeed;
+		let dr = this.muscles[muscleIndex++].value * Config.Creature.MaxRadialChange;
+
 		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
 
-		let da = this.inputs[1] * Config.Creature.PartAngularMaxSpeed;
-		// limit da by torque
+		// limit rotation by torque
 		let resistenceTorque = (this.radius / Config.Creature.StartingRadius) * (this.relativePosition.magnitude() / Config.Creature.PartDistance);
-		//let lossRatio = resistenceTorque / (Config.Creature.StartingRadius * Config.Creature.PartDistance);
 		this.relativePosition.rotate((1 - resistenceTorque) * da);
-
-		let dr = this.inputs[2] * Config.Creature.MaxRadialChange;
+		
 		this.radius = Math.max(3, Math.min(Config.Creature.StartingRadius, this.radius + dr));
 	},
 
 	interact: function () {
-		this.creature.nearestFood.set(0, 0);
-		var distanceToNearestFood = this.creature.scanRadius + 1;
+		
+		this.nearestFood.set(0, 0);
+		var distanceToNearestFood = this.scanRadius + 1;
 		let absolutePosition = this.creature.location.copy().add(this.relativePosition);
 
 		// eat
@@ -73,11 +81,14 @@ Part.prototype = {
 					this.creature.eatFood(i);
 				}
 				else if (distanceToFood <= distanceToNearestFood) {
-					this.creature.nearestFood = this.creature.world.food[i].copy().subtract(this.creature.location);
+					this.nearestFood = this.creature.world.food[i].copy().subtract(this.creature.location);
 					distanceToNearestFood = distanceToFood;
 				}
 			}
 		}
+
+		this.sensors[0].value = this.nearestFood.magnitude();
+		this.sensors[1].value = this.nearestFood.angle();
 	}
 }
 
@@ -88,107 +99,72 @@ function Creature(world, specifics)
 
 	this.world = world;
 	this.graphics = this.world.graphics;
-
-	if (specifics.parts !== undefined) {
-		this.parts = specifics.parts;
-	}
-	else {
-		// random parts
-		let numParts = Math.floor(Math.random() * (Config.Creature.MaxStartingParts + 1));
-		this.parts = [];
-		for (let i = 0; i < numParts; i++) {
-			this.parts.push(new Part(this));
-		}
-	}
-
-	this.reset();
-
+	this.radius = Config.Creature.StartingRadius;
 	this.velocity = new Vector(0, 0).random();
 	this.location = new Vector(
 		Math.random() * (this.world.width - 100) + 50,
 		Math.random() * (this.world.height - 100) + 50
 	);
 
-	this.nearestFood = new Vector(0, 0);
-
-	if (specifics.scanRadius !== undefined) {
-		this.scanRadius = specifics.scanRadius;
-	}
-
-	if (specifics.color !== undefined) {
-		this.color = specifics.color;
+	if (specifics.parts !== undefined) {
+		this.parts = specifics.parts;
 	}
 	else {
-		this.color = 'rgb(' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ')';
+		// random parts
+		this.parts = [];
+		let numParts = 1 + Math.floor(Math.random() * Config.Creature.MaxStartingParts);
+		for (let i = 0; i < numParts; i++) {
+			this.parts.push(new Part(this));
+		}
 	}
 
-	if (specifics.network !== undefined) {
-		this.network = specifics.network;
+	if (specifics.brain !== undefined) {
+		this.brain = specifics.brain;
 	}
 	else {
-		let numInputs = 4;
-		let numOutputs = 0;
+		// create a random brain based on the sensors and muscles from all parts
+		let allSensors = [];
+		let allMuscles = [];
 		this.parts.forEach(part => {
-			numOutputs += part.inputs.length; // distribute outputs to parts
+			part.sensors.forEach(sensor => allSensors.push(sensor));
+			part.muscles.forEach(sensor => allMuscles.push(sensor));
 		});
-		let numHidden = Math.ceil((numInputs + numOutputs) / 2);
-
-		// random network
-		this.network = new Synaptic.Architect.Perceptron(numInputs, numHidden, numOutputs);
-
-		// randomize the activation functions
-		this.network.neurons().forEach(function (neuron) {
-			if (neuron.layer === 'output') {
-				// force all outputs to [-1, 1]
-				neuron.neuron.squash = synaptic.Neuron.squash.TANH;
-			}
-			else {
-				// input and hidden layers can use any activation function
-				neuron.neuron.squash = that.squashingFunctions[Math.floor(Math.random() * that.squashingFunctions.length)];
-			}
-		});
+		this.brain = new Brain(allSensors, allMuscles);
 	}
+
+	this.color = specifics.color || 'rgb(' +
+		Math.floor(Math.random() * 255) + ',' +
+		Math.floor(Math.random() * 255) + ',' +
+		Math.floor(Math.random() * 255) + ')';
+
+	this.reset();
 }
 
 Creature.prototype = {
 
-	radius:           Config.Creature.StartingRadius,
-	scanRadius:       Config.Creature.StartingScanRadius,
-	parts:            [],
-
-	squashingFunctions: [
-		Synaptic.Neuron.squash.LOGISTIC,
-		Synaptic.Neuron.squash.TANH,
-		Synaptic.Neuron.squash.HLIM,
-		Synaptic.Neuron.squash.IDENTITY
-	],
+	world: undefined,
+	brain: undefined,
+	graphics: undefined,
+	radius: undefined,
+	location: undefined,
+	velocity: undefined,
+	color: undefined,
+	parts: undefined,
 
 	tick: function()
 	{
-		// assign all input values
-		var inputs = [];
-		inputs.push(this.nearestFood.magnitude());
-		inputs.push(this.nearestFood.angle());
-		inputs.push(this.velocity.magnitude());
-		inputs.push(this.velocity.angle());
+		var that = this;
 
 		// feed the neural network forward
-		var outputs = this.network.activate(inputs);
+		this.brain.activate();
 
 		let totalWeight = 0;
 		this.velocity.set(0, 0);
-		for (let i = 0; i < this.parts.length; i++) {
-			let outputIndex = i * 3;
-			this.parts[i].inputs[0] = outputs[outputIndex];
-			this.parts[i].inputs[1] = outputs[outputIndex + 1];
-			this.parts[i].inputs[2] = outputs[outputIndex + 2];
-			this.parts[i].tick();
-			this.velocity.add(this.parts[i].relativePosition.copy().invert());
-			totalWeight += this.parts[i].radius;
-		}
+		this.parts.forEach(part => {
+			part.tick();
+			that.velocity.add(part.relativePosition.copy().invert());
+			totalWeight += part.radius;
+		});
 
 		// limit magnitude based on overall radii ratio
 		let magnitude = (this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed;
@@ -204,9 +180,7 @@ Creature.prototype = {
 
 	interact: function()
 	{
-		for (let i = 0; i < this.parts.length; i++) {
-			this.parts[i].interact();
-		}
+		this.parts.forEach(part => part.interact());
 	},
 
 	eatFood: function(foodId) {
@@ -217,41 +191,18 @@ Creature.prototype = {
 	clone: function()
 	{
 		var creature = new Creature(this.world, {
-			network: this.network.clone(),
+			brain: this.brain.clone(),
 			color: this.color,
-			scanRadius: this.scanRadius,
 			parts: [],
 		});
 
-		this.parts.forEach(part => {
-			creature.parts.push(part.clone(creature));
-		});
+		creature.parts = this.parts.map(part => part.clone(creature));
 		
 		// mutations
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
-			let neurons = creature.network.neurons();
-			for (var i in neurons) {
-				let neuron = neurons[i].neuron;
-				let layer = neurons[i].layer;
-
-				// random connection weight mutation
-				for (var j in neuron.connections.projected) {
-					let connection = neuron.connections.projected[j];
-					if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
-						connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
-					}
-				}
-
-				// random activation function mutation
-				if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
-					neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
-				}
-			}
-
-			// scan radius mutation
-			if (Math.random() < Config.ChanceOf.ScanRadiusChange) {
-				creature.scanRadius += Config.Fluxuation.RandomScanRadiusChange();
-			}
+			
+			// insane in the membrane
+			this.brain.mutate();
 
 			// part generation
 			if (Math.random() < Config.ChanceOf.PartGeneration) {
@@ -281,6 +232,15 @@ Creature.prototype = {
 				lineWidth: 2,
 				strokeStyle: this.color,
 			});
+
+			// draw line to nearest food
+			// if (parts[i].nearestFood.magnitude() < parts[i].scanRadius) {
+			// 	let absolutePosition = partLocation.copy().add(parts[i].nearestFood);
+			// 	this.graphics.drawLine(partLocation, absolutePosition, {
+			// 		lineWidth: 1,
+			// 		strokeStyle: 'rgba(150, 150, 150, .5)',
+			// 	});
+			// }
 		}
 
 		// // draw pointer (to show what direction the creature is facing)
@@ -290,15 +250,6 @@ Creature.prototype = {
 		// 	lineWidth: 3,
 		// 	strokeStyle: 'black',
 		// });
-
-		// draw line to nearest food
-		if (this.nearestFood.magnitude() < this.scanRadius) {
-			let absolutePosition = this.location.copy().add(this.nearestFood);
-			this.graphics.drawLine(this.location, absolutePosition, {
-				lineWidth: 1,
-				strokeStyle: 'rgba(150, 150, 150, .5)',
-			});
-		}
 
 		// draw shadow
 		this.graphics.drawCircle(this.location.copy().add(new Vector(3, 3)), this.radius, {
@@ -318,7 +269,7 @@ Creature.prototype = {
 	highlight: function()
 	{
 		// draw a semitransparent "halo" around the creature, to make it stand out
-		this.graphics.drawCircle(this.location, this.scanRadius, {
+		this.graphics.drawCircle(this.location, Config.Creature.PartDistance + (this.radius / 2), {
 			lineWidth: 1,
 			fillStyle: this.color,
 			globalAlpha: .2,
@@ -326,17 +277,14 @@ Creature.prototype = {
 	},
 
 	addPart: function (part) {
+		var that = this;
 		this.parts.push(part);
-		for (let newNeuronIndex = 0; newNeuronIndex < part.inputs.length; newNeuronIndex++) {
-			let outputNeuron = new synaptic.Neuron();
-			outputNeuron.squash = synaptic.Neuron.squash.TANH;
-			// connect all hidden layer neurons to this new output neuron
-			for (let i = 0; i < this.network.layers.hidden[0].length; i++) {
-				let hiddenNeuron = this.network.layers.hidden[0][i].neuron;
-				hiddenNeuron.project(outputNeuron);
-			}
-			this.network.layers.output.add(outputNeuron);
-		}
+		part.sensors.forEach(sensor => {
+			that.brain.addSensor(sensor);
+		});
+		part.muscles.forEach(muscle => {
+			that.brain.addMuscle(muscle);
+		});
 	},
 
 	fitness: function()
