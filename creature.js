@@ -2,38 +2,17 @@
 
 var Brain = require('./brain');
 var Config = require('./config');
+var Debug = require('./debug');
 var Graphics = require('./graphics');
 var Vector =require('./vector');
 
-function Part(creature, specifics) {
-	var that = this;
-	specifics = specifics || {};
-
-	this.creature = creature;
-
-	if (specifics.relativePosition !== undefined) {
-		this.relativePosition = specifics.relativePosition;
-	}
-	else {
-		this.relativePosition = new Vector(0, 0);
-		this.relativePosition.setMagnitude(Config.Creature.PartDistance);
-		this.relativePosition.setAngle(Math.random() * Math.PI * 2);
-	}
-
-	this.sensors = [
-		{ value: 0 }, // relative distance to nearest food
-		{ value: 0 }, // relative angle of nearest food
-	]
-
-	this.muscles = [
-		{ value: 0 }, // relative angle delta from creature
-		{ value: 0 }, // relative length delta from creature
-		{ value: 0 }, // relative radius delta
-	];
-
+function Part() {
+	this.relativePosition =  this._generateRelativePosition();
+	this.sensors = this._generateDefaultSensors();
+	this.muscles = this._generateDefaultMuscles();
 	this.radius = Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
 	this.scanRadius = Config.Creature.StartingScanRadius;
-	this.nearestFood = new Vector(0, 0);
+	this.nearestFood = new Vector(0, 0).setMagnitude(Config.Creature.StartingScanRadius);
 }
 
 Part.prototype = {
@@ -46,25 +25,19 @@ Part.prototype = {
 	scanRadius: undefined,
 	nearestFood: undefined,
 
-	clone: function (creature) {
-		return new Part(creature, {
-			relativePosition: this.relativePosition.copy(),
-		});
+	clone: function () {
+		return new Part();
 	},
 
 	tick: function () {
 		let muscleIndex = 0;
-		let ds = this.muscles[muscleIndex++].value * Config.Creature.PartMaxContractionSpeed;
-		let da = this.muscles[muscleIndex++].value * Config.Creature.PartAngularMaxSpeed;
-		let dr = this.muscles[muscleIndex++].value * Config.Creature.MaxRadialChange;
+		let ds = this.muscles[muscleIndex++].value;
+		let da = this.muscles[muscleIndex++].value;
+		let dr = this.muscles[muscleIndex++].value;
 
-		this.relativePosition.setMagnitude(this.relativePosition.magnitude() + ds).limit(Config.Creature.PartDistance);
-
-		// limit rotation by torque
-		let resistenceTorque = (this.radius / Config.Creature.StartingRadius) * (this.relativePosition.magnitude() / Config.Creature.PartDistance);
-		this.relativePosition.rotate((1 - resistenceTorque) * da);
-		
-		this.radius = Math.max(3, Math.min(Config.Creature.StartingRadius, this.radius + dr));
+		this.relativePosition.setMagnitude(ds * Config.Creature.PartDistance);
+		this.relativePosition.setAngle(this.relativePosition.a);
+		this.radius = Math.abs(dr * Config.Creature.StartingRadius);
 	},
 
 	interact: function () {
@@ -89,53 +62,54 @@ Part.prototype = {
 
 		this.sensors[0].value = this.nearestFood.magnitude();
 		this.sensors[1].value = this.nearestFood.angle();
-	}
+	},
+
+	_generateDefaultSensors: function ()
+	{
+		return [
+			{ value: 0 }, // relative distance to nearest food
+			{ value: 0 }, // relative angle of nearest food
+		];
+	},
+
+	_generateDefaultMuscles: function ()
+	{
+		return [
+			{ value: 0 }, // relative angle delta from creature
+			{ value: 0 }, // relative length delta from creature
+			{ value: 0 }, // relative radius delta
+		];
+	},
+
+	_generateRelativePosition: function ()
+	{
+		return new Vector(1, 1)
+			.setMagnitude(Config.Creature.PartDistance)
+			.setAngle(Math.random() * Math.PI * 2);
+	},
 }
 
-function Creature(world, specifics)
+function Creature(world, brain, numParts)
 {
 	var that = this;
-	specifics = specifics || {};
 
 	this.world = world;
 	this.graphics = this.world.graphics;
+
+	this.parts = [];
+	if (brain !== undefined && numParts !== undefined) {
+		this.brain = brain;
+		this._generateParts(numParts)
+	}
+	else {
+		this.brain = new Brain();
+		this._generateRandomParts();
+	}
+
 	this.radius = Config.Creature.StartingRadius;
 	this.velocity = new Vector(0, 0).random();
-	this.location = new Vector(
-		Math.random() * (this.world.width - 100) + 50,
-		Math.random() * (this.world.height - 100) + 50
-	);
-
-	if (specifics.parts !== undefined) {
-		this.parts = specifics.parts;
-	}
-	else {
-		// random parts
-		this.parts = [];
-		let numParts = 1 + Math.floor(Math.random() * Config.Creature.MaxStartingParts);
-		for (let i = 0; i < numParts; i++) {
-			this.parts.push(new Part(this));
-		}
-	}
-
-	if (specifics.brain !== undefined) {
-		this.brain = specifics.brain;
-	}
-	else {
-		// create a random brain based on the sensors and muscles from all parts
-		let allSensors = [];
-		let allMuscles = [];
-		this.parts.forEach(part => {
-			part.sensors.forEach(sensor => allSensors.push(sensor));
-			part.muscles.forEach(sensor => allMuscles.push(sensor));
-		});
-		this.brain = new Brain(allSensors, allMuscles);
-	}
-
-	this.color = specifics.color || 'rgb(' +
-		Math.floor(Math.random() * 255) + ',' +
-		Math.floor(Math.random() * 255) + ',' +
-		Math.floor(Math.random() * 255) + ')';
+	this.location = this._generateRandomLocation();
+	this.color = this._generateRandomColor();
 
 	this.reset();
 }
@@ -157,11 +131,17 @@ Creature.prototype = {
 
 		// feed the neural network forward
 		this.brain.activate();
-
+		this.velocity.set(1, 1);
 		let totalWeight = 0;
-		this.velocity.set(0, 0);
 		this.parts.forEach(part => {
 			part.tick();
+			let velocityComponent = part.relativePosition.copy().invert();
+			if (that.velocity === null) {
+				that.velocity = velocityComponent;
+			}
+			else {
+				that.velocity.add(velocityComponent);
+			}
 			that.velocity.add(part.relativePosition.copy().invert());
 			totalWeight += part.radius;
 		});
@@ -190,38 +170,34 @@ Creature.prototype = {
 
 	clone: function()
 	{
-		var creature = new Creature(this.world, {
-			brain: this.brain.clone(),
-			color: this.color,
-			parts: [],
-		});
+		var creature = new Creature(this.world, this.brain.clone(), this.parts.length);
+		creature.mutate();
+		return creature;
+	},
 
-		creature.parts = this.parts.map(part => part.clone(creature));
-		
-		// mutations
+	mutate: function () {
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
-			
+
 			// insane in the membrane
 			this.brain.mutate();
 
 			// part generation
 			if (Math.random() < Config.ChanceOf.PartGeneration) {
-				creature.addPart(new Part(creature));
+				let newPart = new Part();
+				newPart.creature = this;
+				this.addPart(newPart);
 			}
 		}
-
-		return creature;
 	},
 
 	draw: function()
 	{
 		// draw parts
-		let parts = this.parts;
-		for (let i = 0; i < parts.length; i++) {
-			let partLocation = this.location.copy().add(parts[i].relativePosition);
+		for (let i = 0; i < this.parts.length; i++) {
+			let partLocation = this.location.copy().add(this.parts[i].relativePosition);
 
 			// draw part
-			this.graphics.drawCircle(partLocation, parts[i].radius, {
+			this.graphics.drawCircle(partLocation, this.parts[i].radius, {
 				fillStyle: this.color,
 				globalAlpha: .30,
 				lineWidth: 1,
@@ -276,15 +252,19 @@ Creature.prototype = {
 		})
 	},
 
-	addPart: function (part) {
+	addPart: function () {
 		var that = this;
-		this.parts.push(part);
+
+		let part = new Part();
+		part.creature = this;
 		part.sensors.forEach(sensor => {
 			that.brain.addSensor(sensor);
 		});
 		part.muscles.forEach(muscle => {
 			that.brain.addMuscle(muscle);
 		});
+
+		this.parts.push(part);
 	},
 
 	fitness: function()
@@ -295,7 +275,34 @@ Creature.prototype = {
 	reset: function()
 	{
 		this.foodEaten = 0;
-	}
+	},
+
+	_generateParts: function (numParts) {
+		for (let i = 0; i < numParts; i++) {
+			this.addPart();
+		}
+	},
+
+	_generateRandomParts: function ()
+	{
+		return this._generateParts(1 + Math.floor(Math.random() * Config.Creature.MaxStartingParts));
+	},
+
+	_generateRandomColor: function ()
+	{
+		return 'rgb(' +
+			Math.floor(Math.random() * 255) + ',' +
+			Math.floor(Math.random() * 255) + ',' +
+			Math.floor(Math.random() * 255) + ')';
+	},
+
+	_generateRandomLocation: function ()
+	{
+		return new Vector(
+			Math.random() * (this.world.width - 100) + 50,
+			Math.random() * (this.world.height - 100) + 50
+		);
+	},
 }
 
 module.exports = Creature;
