@@ -247,7 +247,7 @@ Creature.prototype = {
 	highlight: function()
 	{
 		// draw a semitransparent "halo" around the creature, to make it stand out
-		this.graphics.drawCircle(this.location, Config.Creature.PartDistance + (this.radius / 2), {
+		this.graphics.drawCircle(this.location, Config.Creature.PartDistance + this.radius, {
 			lineWidth: 1,
 			fillStyle: this.color,
 			globalAlpha: .2,
