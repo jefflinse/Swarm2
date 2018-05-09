@@ -149,6 +149,7 @@ Creature.prototype = {
 		// feed the neural network forward
 		this.brain.activate();
 
+		this.velocity.set(0, 0);
 		this.parts.forEach(part => {
 			part.tick();
 			let velocityComponent = part.relativePosition
