@@ -149,6 +149,7 @@ Creature.prototype = {
 		// feed the neural network forward
 		this.brain.activate();
 
+		let drag = 0;
 		this.velocity.set(0, 0);
 		this.parts.forEach(part => {
 			part.tick();
@@ -158,14 +159,12 @@ Creature.prototype = {
 			
 			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.PartDistance;
 			let radiusRatio = part.radius / Config.Creature.StartingRadius;
-			let drag = distanceRatio * radiusRatio;
-			let limitFactor = 1 - drag;
-
-			velocityComponent.limit(velocityComponent.magnitude() * limitFactor);
+			drag += distanceRatio * radiusRatio;
 			that.velocity.add(velocityComponent);
 		});
 
-		this.velocity.limit(Config.Creature.LinearMaxSpeed);
+		let limitFactor = 1 - Math.min(1, drag);
+		this.velocity.limit(Math.min(Config.Creature.LinearMaxSpeed, this.velocity.magnitude()) * limitFactor);
 		this.location.add(this.velocity);
 
 		// interact with the world and other creatures
