@@ -75,7 +75,7 @@ Brain.prototype = {
 
         let numInputs = this.inputs.length;
         let numOutputs = this.outputs.length;
-        let numHidden = Math.max(this.inputs.length, this.outputs.length);
+        let numHidden = Math.max(this.inputs.length, this.outputs.length) + 3;
         let network = new Synaptic.Architect.Perceptron(numInputs, numHidden, numOutputs);
 
         // randomize the activation functions

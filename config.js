@@ -17,7 +17,6 @@ var Config = {
         ActivationFunctionChange: .15,
         ConnectionWeightChange: .15,
         ScanRadiusChange: .15,
-        PartGeneration: .05,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
