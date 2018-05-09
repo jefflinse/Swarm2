@@ -40,7 +40,7 @@ Part.prototype = {
 		Debug.assert(dr !== NaN, "dr is NaN");
 
 		// part distance from creature
-		let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.PartDistance);
+		let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.PartMaxContractionSpeed);
 		this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.PartDistance);
 
 		// part angle from creature
@@ -207,7 +207,7 @@ Creature.prototype = {
 			// draw part
 			this.graphics.drawCircle(partLocation, this.parts[i].radius, {
 				fillStyle: this.color,
-				globalAlpha: .30,
+				globalAlpha: .25,
 				lineWidth: 1,
 			});
 
@@ -234,13 +234,6 @@ Creature.prototype = {
 		// 	lineWidth: 3,
 		// 	strokeStyle: 'black',
 		// });
-
-		// draw shadow
-		this.graphics.drawCircle(this.location.copy().add(new Vector(3, 3)), this.radius, {
-			fillStyle: 'rgb(0, 0, 0)',
-			globalAlpha: .2,
-			lineWidth: 1
-		});
 
 		// draw self
 		this.graphics.drawCircle(this.location, this.radius, {
