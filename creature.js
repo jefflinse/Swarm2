@@ -8,8 +8,8 @@ var Vector =require('./vector');
 
 function Part() {
 	this.relativePosition =  this._generateRelativePosition();
-	this.sensors = this._generateDefaultSensors();
-	this.muscles = this._generateDefaultMuscles();
+	this.inputs = this._generateDefaultInputs();
+	this.outputs = this._generateDefaultOutputs();
 	this.radius = Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
 	this.scanRadius = Config.Creature.StartingScanRadius;
 	this.nearestFood = new Vector(0, 0).setMagnitude(Config.Creature.StartingScanRadius);
@@ -19,8 +19,8 @@ Part.prototype = {
 
 	creature: undefined,
 	relativePosition: undefined,
-	sensors: undefined,
-	muscles: undefined,
+	inputs: undefined,
+	outputs: undefined,
 	radius: undefined,
 	scanRadius: undefined,
 	nearestFood: undefined,
@@ -30,13 +30,13 @@ Part.prototype = {
 	},
 
 	tick: function () {
-		let muscleIndex = 0;
-		let ds = this.muscles[muscleIndex++].value;
-		let da = this.muscles[muscleIndex++].value;
-		let dr = this.muscles[muscleIndex++].value;
+		let inputIndex = 0;
+		let ds = this.inputs[inputIndex++].value;
+		let da = this.inputs[inputIndex++].value;
+		let dr = this.inputs[inputIndex++].value;
 
-		this.relativePosition.setMagnitude(ds * Config.Creature.PartDistance);
-		this.relativePosition.setAngle(this.relativePosition.a);
+		this.relativePosition.setMagnitude(Math.abs(ds * Config.Creature.PartDistance));
+		this.relativePosition.setAngle(Math.abs(da * Math.PI * 2));
 		this.radius = Math.abs(dr * Config.Creature.StartingRadius);
 	},
 
@@ -60,24 +60,23 @@ Part.prototype = {
 			}
 		}
 
-		this.sensors[0].value = this.nearestFood.magnitude();
-		this.sensors[1].value = this.nearestFood.angle();
+		this.outputs[0].value = this.nearestFood.magnitude();
+		this.outputs[1].value = this.nearestFood.angle();
 	},
 
-	_generateDefaultSensors: function ()
-	{
-		return [
-			{ value: 0 }, // relative distance to nearest food
-			{ value: 0 }, // relative angle of nearest food
-		];
-	},
-
-	_generateDefaultMuscles: function ()
+	_generateDefaultInputs: function ()
 	{
 		return [
 			{ value: 0 }, // relative angle delta from creature
 			{ value: 0 }, // relative length delta from creature
 			{ value: 0 }, // relative radius delta
+		];
+	},
+
+	_generateDefaultOutputs: function () {
+		return [
+			{ value: 0 }, // relative distance to nearest food
+			{ value: 0 }, // relative angle of nearest food
 		];
 	},
 
@@ -89,27 +88,31 @@ Part.prototype = {
 	},
 }
 
-function Creature(world, brain, numParts)
+function Creature(world, brain, parts, inherited)
 {
 	var that = this;
+	inherited = inherited || {};
 
 	this.world = world;
 	this.graphics = this.world.graphics;
 
-	this.parts = [];
-	if (brain !== undefined && numParts !== undefined) {
-		this.brain = brain;
-		this._generateParts(numParts)
-	}
-	else {
-		this.brain = new Brain();
-		this._generateRandomParts();
-	}
+	// create the parts and brain
+	this.parts = parts || this._generateRandomParts();
+	this.parts.forEach(part => part.creature = this);
+	this.brain = brain || new Brain();
 
-	this.radius = Config.Creature.StartingRadius;
+	// connect the parts to the brain
+	let inputs = [], outputs = [];
+	this.parts.forEach(part => {
+		inputs = inputs.concat(part.inputs);
+		outputs = outputs.concat(part.outputs);
+	});
+	this.brain.connect(inputs, outputs)
+
+	this.radius = inherited.radius || Config.Creature.StartingRadius;
 	this.velocity = new Vector(0, 0).random();
 	this.location = this._generateRandomLocation();
-	this.color = this._generateRandomColor();
+	this.color = inherited.color || this._generateRandomColor();
 
 	this.reset();
 }
@@ -170,23 +173,20 @@ Creature.prototype = {
 
 	clone: function()
 	{
-		var creature = new Creature(this.world, this.brain.clone(), this.parts.length);
+		let newBrain = this.brain.clone();
+		let newParts = this.parts.map(part => part.clone());
+		let creature = new Creature(this.world, newBrain, newParts, {
+			color: this.color,
+			radius: this.radius,
+		});
 		creature.mutate();
 		return creature;
 	},
 
 	mutate: function () {
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
-
 			// insane in the membrane
 			this.brain.mutate();
-
-			// part generation
-			if (Math.random() < Config.ChanceOf.PartGeneration) {
-				let newPart = new Part();
-				newPart.creature = this;
-				this.addPart(newPart);
-			}
 		}
 	},
 
@@ -252,21 +252,6 @@ Creature.prototype = {
 		})
 	},
 
-	addPart: function () {
-		var that = this;
-
-		let part = new Part();
-		part.creature = this;
-		part.sensors.forEach(sensor => {
-			that.brain.addSensor(sensor);
-		});
-		part.muscles.forEach(muscle => {
-			that.brain.addMuscle(muscle);
-		});
-
-		this.parts.push(part);
-	},
-
 	fitness: function()
 	{
 		return this.foodEaten;
@@ -278,9 +263,12 @@ Creature.prototype = {
 	},
 
 	_generateParts: function (numParts) {
+		let parts = [];
 		for (let i = 0; i < numParts; i++) {
-			this.addPart();
+			parts.push(new Part());
 		}
+
+		return parts;
 	},
 
 	_generateRandomParts: function ()

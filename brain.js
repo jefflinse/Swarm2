@@ -6,16 +6,16 @@ var Synaptic = require('synaptic');
 
 function Brain(network) {
 
-    this.network = network || this._createDefaultNetwork();
-    this.sensors = [];
-    this.muscles = [];
+    this.network = network;
+    this.inputs = [];
+    this.outputs = [];
 }
 
 Brain.prototype = {
 
     network: undefined,
-    sensors: undefined,
-    muscles: undefined,
+    inputs: undefined,
+    outputs: undefined,
 
     squashingFunctions: [
         Synaptic.Neuron.squash.LOGISTIC,
@@ -25,55 +25,27 @@ Brain.prototype = {
     ],
 
     activate: function () {
-        let inputValues = this.sensors.map(sensor => sensor.value);
+        let inputValues = this.inputs.map(input => input.value);
         let outputValues = this.network.activate(inputValues);
         let outputIndex = 0;
-        this.muscles.forEach(muscle => {
-            muscle.value = outputValues[outputIndex++];
+        this.outputs.forEach(output => {
+            output.value = outputValues[outputIndex++];
         });
     },
 
-    addSensor: function (sensor) {
-        // sensor = { value }
-        this.sensors.push(sensor);
-        this._rebalanceHiddenLayer();
+    connect: function (inputs, outputs) {
+        this.inputs = inputs;
+        this.outputs = outputs;
 
-        // add a new sensory neuron if necessary
-        if (this.network.inputs() < this.sensors.length) {
-            let sensorNeuron = new Synaptic.Neuron();
-            sensorNeuron.squash = this._randomSquashingFunction();
+        this.network = this.network || this._randomNetworkBasedOnInputsAndOutputs();
 
-            // add and project to all hidden layer neurons
-            this.network.layers.input.add(sensorNeuron);
-            this.network.layers.hidden[0].neurons().forEach(neuron => {
-                sensorNeuron.project(neuron, Math.random() * 2 - 1);
-            });
-        }
-
-        Debug.assert(this.sensors.length === this.network.inputs(), "sensors/inputs mismatch");
+        Debug.assert(this.network.layers.input.size === this.inputs.length,
+            "input count mismatch with NN (" + this.inputs.length + "/" + this.network.layers.input.size + ")");
+        Debug.assert(this.network.layers.output.size === this.outputs.length,
+            "output count mismatch with NN (" + this.outputs.length + "/" + this.network.layers.output.size + ")");
     },
 
-    addMuscle: function (muscle) {
-        // muscle = { value: double }
-        this.muscles.push(muscle);
-        this._rebalanceHiddenLayer();
-        
-        // add a new muscle neuron if necessary
-        if (this.network.outputs() < this.muscles.length) {
-            let muscleNeuron = new Synaptic.Neuron();
-            muscleNeuron.squash = Synaptic.Neuron.squash.TANH;
-
-            // add and project all hidden layer neurons to it
-            this.network.layers.output.add(muscleNeuron);
-            this.network.layers.hidden[0].neurons().forEach(neuron => {
-                neuron.project(muscleNeuron, Math.random() * 2 - 1);
-            });
-        }
-
-        Debug.assert(this.muscles.length === this.network.outputs(), "muscles/outputs mismatch");
-    },
-
-    clone: function (sensors, muscles) {
+    clone: function () {
         return new Brain(this.network.clone());
     },
 
@@ -98,10 +70,13 @@ Brain.prototype = {
         }
     },
 
-    _createDefaultNetwork: function () {
+    _randomNetworkBasedOnInputsAndOutputs: function () {
         var that = this;
 
-        let network = new Synaptic.Architect.Perceptron(1, 1, 1);
+        let numInputs = this.inputs.length;
+        let numOutputs = this.outputs.length;
+        let numHidden = Math.max(this.inputs.length, this.outputs.length);
+        let network = new Synaptic.Architect.Perceptron(numInputs, numHidden, numOutputs);
 
         // randomize the activation functions
         network.neurons().forEach(neuron => {
@@ -116,27 +91,6 @@ Brain.prototype = {
         });
 
         return network;
-    },
-
-    _rebalanceHiddenLayer: function () {
-        let hiddenLayerSize = Math.max(this.sensors.length, this.network.layers.hidden[0].size, this.muscles.length);
-        if (this.network.layers.hidden[0].size < hiddenLayerSize) {
-            let hiddenNeuron = new Synaptic.Neuron();
-            // hidden layer can use any activation function
-            hiddenNeuron.squash = this._randomSquashingFunction();
-
-            // project all inputs to new hidden neuron
-            this.network.layers.input.list.forEach(inputNeuron => {
-                inputNeuron.project(hiddenNeuron, Math.random() * 2 - 1);
-            });
-
-            // project hidden neuron to all outputs
-            this.network.layers.output.list.forEach(outputNeuron => {
-                hiddenNeuron.project(outputNeuron, Math.random() * 2 - 1);
-            });
-
-            this.network.layers.hidden[0].add(hiddenNeuron);
-        }
     },
 
     _randomSquashingFunction: function () {
