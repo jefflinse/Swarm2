@@ -35,9 +35,21 @@ Part.prototype = {
 		let da = this.inputs[inputIndex++].value;
 		let dr = this.inputs[inputIndex++].value;
 
-		this.relativePosition.setMagnitude(Math.abs(ds * Config.Creature.PartDistance));
-		this.relativePosition.setAngle(Math.abs(da * Math.PI * 2));
-		this.radius = Math.abs(dr * Config.Creature.StartingRadius);
+		Debug.assert(ds !== NaN, "ds is NaN");
+		Debug.assert(da !== NaN, "da is NaN");
+		Debug.assert(dr !== NaN, "dr is NaN");
+
+		// part distance from creature
+		let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.PartDistance);
+		this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.PartDistance);
+
+		// part angle from creature
+		let newAngle = (this.relativePosition.angle() + (da * Config.Creature.PartAngularMaxSpeed)) % (Math.PI * 2);
+		this.relativePosition.setAngle(newAngle);
+
+		// part radius
+		let newRadius = Math.min(Config.Creature.StartingRadius, this.radius + (dr * Config.Creature.MaxRadialChange));
+		this.radius = Math.abs(newRadius);
 	},
 
 	interact: function () {
@@ -98,7 +110,7 @@ function Creature(world, brain, parts, inherited)
 
 	// create the parts and brain
 	this.parts = parts || this._generateRandomParts();
-	this.parts.forEach(part => part.creature = this);
+	this.parts.forEach(part => part.creature = that);
 	this.brain = brain || new Brain();
 
 	// connect the parts to the brain
@@ -107,7 +119,9 @@ function Creature(world, brain, parts, inherited)
 		inputs = inputs.concat(part.inputs);
 		outputs = outputs.concat(part.outputs);
 	});
-	this.brain.connect(inputs, outputs)
+
+	// part outputs are brain inputs, and vice-versa
+	this.brain.connect(outputs, inputs)
 
 	this.radius = inherited.radius || Config.Creature.StartingRadius;
 	this.velocity = new Vector(0, 0).random();
@@ -134,26 +148,15 @@ Creature.prototype = {
 
 		// feed the neural network forward
 		this.brain.activate();
-		this.velocity.set(1, 1);
-		let totalWeight = 0;
+
 		this.parts.forEach(part => {
 			part.tick();
-			let velocityComponent = part.relativePosition.copy().invert();
-			if (that.velocity === null) {
-				that.velocity = velocityComponent;
-			}
-			else {
-				that.velocity.add(velocityComponent);
-			}
-			that.velocity.add(part.relativePosition.copy().invert());
-			totalWeight += part.radius;
+			let velocityComponent = part.relativePosition
+				.copy()
+				.invert();
+			that.velocity.add(velocityComponent);
 		});
 
-		// limit magnitude based on overall radii ratio
-		let magnitude = (this.velocity.magnitude() / Config.Creature.PartDistance) * Config.Creature.LinearMaxSpeed;
-		let weightRatio = totalWeight / (this.parts.length * Config.Creature.StartingRadius);
-		magnitude = magnitude - (magnitude * weightRatio);
-		this.velocity.setMagnitude(magnitude);
 		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
 
