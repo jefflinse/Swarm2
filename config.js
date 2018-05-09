@@ -26,7 +26,7 @@ var Config = {
         StartingScanRadius: 50,
         MaxStartingParts: 3,
         PartDistance: 20,
-        PartAngularMaxSpeed: Math.PI / 10,
+        PartAngularMaxSpeed: Math.PI / 50,
         PartMaxContractionSpeed: 5,
         MaxRadialChange: 5,
         MinPartRadiusForConsumption: 3,

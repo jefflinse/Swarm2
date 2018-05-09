@@ -154,6 +154,11 @@ Creature.prototype = {
 			let velocityComponent = part.relativePosition
 				.copy()
 				.invert();
+			
+			// the "weight" of a part limits its thrust (but increases food consumption area)
+			let limitFactor = 1 - (part.radius / Config.Creature.StartingRadius);
+
+			velocityComponent.limit(velocityComponent.magnitude() * limitFactor);
 			that.velocity.add(velocityComponent);
 		});
 
