@@ -10,7 +10,7 @@ function Part() {
 	this.relativePosition =  this._generateRelativePosition();
 	this.inputs = this._generateDefaultInputs();
 	this.outputs = this._generateDefaultOutputs();
-	this.radius = Math.floor(Math.random() * Config.Creature.StartingRadius) + 3;
+	this.radius = Config.Creature.Part.MaxRadius;
 	this.scanRadius = Config.Creature.StartingScanRadius;
 	this.nearestFood = new Vector(0, 0).setMagnitude(Config.Creature.StartingScanRadius);
 }
@@ -40,15 +40,15 @@ Part.prototype = {
 		Debug.assert(dr !== NaN, "dr is NaN");
 
 		// part distance from creature
-		let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.PartMaxContractionSpeed);
-		this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.PartDistance);
+		let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.Part.MaxExtendContractSpeed);
+		this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.Part.MaxDistanceFromCreature);
 
 		// part angle from creature
-		let newAngle = (this.relativePosition.angle() + (da * Config.Creature.PartAngularMaxSpeed)) % (Math.PI * 2);
+		let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
 		this.relativePosition.setAngle(newAngle);
 
 		// part radius
-		let newRadius = Math.min(Config.Creature.StartingRadius, this.radius + (dr * Config.Creature.MaxRadialChange));
+		let newRadius = Math.min(Config.Creature.Part.MaxRadius, this.radius + (dr * Config.Creature.MaxRadialChange));
 		this.radius = Math.abs(newRadius);
 	},
 
@@ -62,7 +62,7 @@ Part.prototype = {
 		for (var i in this.creature.world.food) {
 			if (this.creature.world.food[i].x !== null) {
 				let distanceToFood = absolutePosition.distanceBetween(this.creature.world.food[i]);
-				if (this.radius > Config.Creature.MinPartRadiusForConsumption && distanceToFood <= this.radius) {
+				if (this.radius > Config.Creature.Part.MinRadiusForConsumption && distanceToFood <= this.radius) {
 					this.creature.eatFood(i);
 				}
 				else if (distanceToFood <= distanceToNearestFood) {
@@ -95,7 +95,7 @@ Part.prototype = {
 	_generateRelativePosition: function ()
 	{
 		return new Vector(1, 1)
-			.setMagnitude(Config.Creature.PartDistance)
+			.setMagnitude(Config.Creature.Part.MaxDistanceFromCreature)
 			.setAngle(Math.random() * Math.PI * 2);
 	},
 }
@@ -123,7 +123,7 @@ function Creature(world, brain, parts, inherited)
 	// part outputs are brain inputs, and vice-versa
 	this.brain.connect(outputs, inputs)
 
-	this.radius = inherited.radius || Config.Creature.StartingRadius;
+	this.radius = inherited.radius || Config.Creature.MaxRadius;
 	this.velocity = new Vector(0, 0).random();
 	this.location = this._generateRandomLocation();
 	this.color = inherited.color || this._generateRandomColor();
@@ -157,8 +157,8 @@ Creature.prototype = {
 				.copy()
 				.invert();
 			
-			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.PartDistance;
-			let radiusRatio = part.radius / Config.Creature.StartingRadius;
+			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
+			let radiusRatio = part.radius / Config.Creature.Part.MaxRadius;
 			drag += distanceRatio * radiusRatio;
 			that.velocity.add(velocityComponent);
 		});
@@ -248,7 +248,7 @@ Creature.prototype = {
 	highlight: function()
 	{
 		// draw a semitransparent "halo" around the creature, to make it stand out
-		this.graphics.drawCircle(this.location, Config.Creature.PartDistance + this.radius, {
+		this.graphics.drawCircle(this.location, Config.Creature.Part.MaxDistanceFromCreature + this.radius, {
 			lineWidth: 1,
 			fillStyle: this.color,
 			globalAlpha: .2,

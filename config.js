@@ -21,14 +21,17 @@ var Config = {
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
         LinearMaxSpeed: .5,
-        StartingRadius: 10,
+        MaxRadius: 10,
         StartingScanRadius: 50,
         MaxStartingParts: 5,
-        PartDistance: 25,
-        PartAngularMaxSpeed: Math.PI / 25,
-        PartMaxContractionSpeed: 5,
         MaxRadialChange: .5,
-        MinPartRadiusForConsumption: 3,
+        Part: {
+            MaxRadius: 7,
+            MaxDistanceFromCreature: 25,
+            MaxExtendContractSpeed: 5,
+            MaxAngularSpeed: Math.PI / 25,
+            MinRadiusForConsumption: 1,
+        },
     },
     Fluxuation: {
         RandomConnectionWeightChange: () => plusOrMinusMax(.1),
