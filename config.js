@@ -14,19 +14,19 @@ var plusOrMinusMax = function (value) {
 
 var Config = {
     ChanceOf: {
-        ActivationFunctionChange: .15,
-        ConnectionWeightChange: .15,
-        ScanRadiusChange: .15,
+        ActivationFunctionChange: .01,
+        ConnectionWeightChange: .05,
+        ScanRadiusChange: .03,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
-        LinearMaxSpeed: .25,
+        LinearMaxSpeed: .5,
         StartingRadius: 10,
         StartingScanRadius: 50,
-        MaxStartingParts: 3,
+        MaxStartingParts: 5,
         PartDistance: 25,
-        PartAngularMaxSpeed: Math.PI / 100,
-        PartMaxContractionSpeed: .5,
+        PartAngularMaxSpeed: Math.PI / 25,
+        PartMaxContractionSpeed: 5,
         MaxRadialChange: .5,
         MinPartRadiusForConsumption: 3,
     },
