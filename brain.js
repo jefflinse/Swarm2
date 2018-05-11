@@ -80,12 +80,16 @@ Brain.prototype = {
 
         // randomize the activation functions
         network.neurons().forEach(neuron => {
+            if (neuron.layer === 'input') {
+                // force all inputs to [0, 1]
+                neuron.neuron.squash = Synaptic.Neuron.squash.LOGISTIC;
+            }
             if (neuron.layer === 'output') {
                 // force all outputs to [-1, 1]
                 neuron.neuron.squash = Synaptic.Neuron.squash.TANH;
             }
             else {
-                // input and hidden layers can use any activation function
+                // hidden layers can use any activation function
                 neuron.neuron.squash = that._randomSquashingFunction();
             }
         });
