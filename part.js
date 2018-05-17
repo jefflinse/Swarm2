@@ -4,12 +4,13 @@ var Config = require('./config');
 var Debug = require('./debug');
 var Vector = require('./vector');
 
-function Part() {
+function Part(specifics) {
+    specifics = specifics || {};
     this.relativePosition = this._generateRelativePosition();
     this.inputs = this._generateDefaultInputs();
     this.outputs = this._generateDefaultOutputs();
-    this.radius = Config.Creature.Part.MaxRadius;
-    this.scanRadius = Config.Creature.StartingScanRadius;
+    this.radius = specifics.radius || Config.Creature.Part.MaxRadius;
+    this.scanRadius = specifics.scanRadius || Config.Creature.StartingScanRadius;
     this.nearestFood = new Vector(0, 0).setMagnitude(Config.Creature.StartingScanRadius);
 }
 
@@ -24,7 +25,10 @@ Part.prototype = {
     nearestFood: undefined,
 
     clone: function () {
-        return new Part();
+        return new Part({
+            radius: this.radius,
+            scanRadius: this.scanRadius,
+        });
     },
 
     tick: function () {
