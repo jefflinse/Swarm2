@@ -1,8 +1,8 @@
 'use strict';
 
-var Config = require('./config');
-var Debug = require('./debug');
-var Vector = require('./vector');
+var Config = require('./Config');
+var Debug = require('./Debug');
+var Vector = require('./Vector');
 
 function Part(specifics) {
     specifics = specifics || {};

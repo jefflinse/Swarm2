@@ -1,6 +1,6 @@
 'use strict';
 
-var Vector = require('./vector');
+var Vector = require('./Vector');
 
 function Graphics(ctx, width, height) {
     this.ctx = ctx;

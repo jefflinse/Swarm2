@@ -2,4 +2,4 @@
 rm -rf bin
 mkdir bin
 cp src/template.html bin/index.html
-browserify src/app.js > bin/bundle.js
+browserify src/App.js > bin/bundle.js

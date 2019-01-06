@@ -1,9 +1,9 @@
 'use strict';
 
-var Config = require('./config');
-var Creature = require('./creature');
-var Graphics = require('./graphics');
-var Vector = require('./vector');
+var Config = require('./Config');
+var Creature = require('./Creature');
+var Graphics = require('./Graphics');
+var Vector = require('./Vector');
 
 function World(canvas) {
 	var that = this;

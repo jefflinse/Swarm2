@@ -1,7 +1,7 @@
 'use strict';
 
-var Config = require('./config');
-var Debug = require('./debug');
+var Config = require('./Config');
+var Debug = require('./Debug');
 var Synaptic = require('synaptic');
 
 function Brain(network) {

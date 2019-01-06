@@ -1,6 +1,6 @@
 'use strict';
 
-var World = require('./world');
+var World = require('./World');
 
 var canvas = document.getElementById('canvas');
 canvas.width = window.innerWidth;

@@ -1,11 +1,11 @@
 'use strict';
 
-var Brain = require('./brain');
-var Config = require('./config');
-var Debug = require('./debug');
-var Graphics = require('./graphics');
-var Part = require('./part');
-var Vector =require('./vector');
+var Brain = require('./Brain');
+var Config = require('./Config');
+var Debug = require('./Debug');
+var Graphics = require('./Graphics');
+var Part = require('./Part');
+var Vector =require('./Vector');
 
 function Creature(world, brain, parts, inherited)
 {
