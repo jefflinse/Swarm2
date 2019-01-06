@@ -1,3 +1,5 @@
 #!/bin/bash
-rm bundle.js
-browserify app.js > bundle.js
+rm -rf bin
+mkdir bin
+cp src/template.html bin/index.html
+browserify src/app.js > bin/bundle.js
