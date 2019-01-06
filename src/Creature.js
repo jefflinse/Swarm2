@@ -2,9 +2,7 @@
 
 var Brain = require('./Brain');
 var Config = require('./Config');
-var Debug = require('./Debug');
-var Graphics = require('./Graphics');
-var Part = require('./Part');
+var Part = require('./parts/Part');
 var Vector =require('./Vector');
 
 function Creature(world, brain, parts, inherited)
