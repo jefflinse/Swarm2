@@ -54,6 +54,29 @@ Creature.prototype = {
 		// feed the neural network forward
 		this.brain.activate();
 
+		this.parts.forEach(part => {
+			part.tick();
+
+			// initial thrust vector establishes direction
+			// magnitude of thrust is calculated below
+			let thrustVector = part.relativePosition.copy().invert();
+
+			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
+			let radiusRatio = part.radius / Config.Creature.Part.MaxRadius;
+
+			// each part contributes 1/Nth of the total thrust for N total parts
+			let thrustMagnitude = Config.Creature.LinearMaxSpeed / that.world.creatures.length;
+
+			// each part's thrust is proportional to the ratio of the part's distance from the creature
+			thrustMagnitude *= distanceRatio;
+
+			// each part's thrust is limited by its weight (radius)
+			thrustMagnitude -= (thrustMagnitude * radiusRatio);
+
+			thrustVector.setMagnitude(thrustMagnitude);
+			this.velocity.add(thrustVector);
+		});
+
 		let drag = 0;
 		this.velocity.set(0, 0);
 		this.parts.forEach(part => {
