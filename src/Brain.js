@@ -75,8 +75,22 @@ Brain.prototype = {
 
         let numInputs = this.inputs.length;
         let numOutputs = this.outputs.length;
-        let numHidden = Math.max(this.inputs.length, this.outputs.length) + 3;
-        let network = new Synaptic.Architect.Perceptron(numInputs, numHidden, numOutputs);
+        let numHiddenLayers = this._randomIntInclusive(Config.Brain.MinHiddenLayers, Config.Brain.MaxHiddenLayers);
+        let maxNodesPerHiddenLayer = Math.max(numInputs, numOutputs) + Config.Brain.MaxAdditionalNodesPerHiddenLayer;
+
+        let layers = [];
+        layers.push(numInputs);
+        for (var i = 0; i < numHiddenLayers; i++) {
+            layers.push(this._randomIntInclusive(Config.Brain.MinNodesPerHiddenLayer, maxNodesPerHiddenLayer));
+        }
+        layers.push(numOutputs);
+
+        var applyArrayArgsForConstructor = function(f, args) {
+            var params = [f].concat(args);
+            return f.bind.apply(f, params);
+        };
+
+        var network = new (applyArrayArgsForConstructor(Synaptic.Architect.Perceptron, layers));
 
         // randomize the activation functions
         network.neurons().forEach(neuron => {
@@ -99,6 +113,10 @@ Brain.prototype = {
 
     _randomSquashingFunction: function () {
         return this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
+    },
+
+    _randomIntInclusive(min, max) {
+        return min + Math.floor(Math.random() * (max - min + 1));
     },
 }
 

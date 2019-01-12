@@ -13,6 +13,12 @@ var plusOrMinusMax = function (value) {
 }
 
 var Config = {
+    Brain: {
+        MinHiddenLayers: 1,
+        MaxHiddenLayers: 2,
+        MinNodesPerHiddenLayer: 3,
+        MaxAdditionalNodesPerHiddenLayer: 0,
+    },
     ChanceOf: {
         ActivationFunctionChange: .01,
         ConnectionWeightChange: .05,
