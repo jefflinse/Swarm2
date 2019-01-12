@@ -54,45 +54,13 @@ Creature.prototype = {
 		// feed the neural network forward
 		this.brain.activate();
 
-		this.parts.forEach(part => {
-			part.tick();
-
-			// initial thrust vector establishes direction
-			// magnitude of thrust is calculated below
-			let thrustVector = part.relativePosition.copy().invert();
-
-			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
-			let radiusRatio = part.radius / Config.Creature.Part.MaxRadius;
-
-			// each part contributes 1/Nth of the total thrust for N total parts
-			let thrustMagnitude = Config.Creature.LinearMaxSpeed / that.world.creatures.length;
-
-			// each part's thrust is proportional to the ratio of the part's distance from the creature
-			thrustMagnitude *= distanceRatio;
-
-			// each part's thrust is limited by its weight (radius)
-			thrustMagnitude -= (thrustMagnitude * radiusRatio);
-
-			thrustVector.setMagnitude(thrustMagnitude);
-			this.velocity.add(thrustVector);
-		});
-
-		let drag = 0;
 		this.velocity.set(0, 0);
+
 		this.parts.forEach(part => {
 			part.tick();
-			let velocityComponent = part.relativePosition
-				.copy()
-				.invert();
-			
-			let distanceRatio = part.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
-			let radiusRatio = part.radius / Config.Creature.Part.MaxRadius;
-			drag += distanceRatio * radiusRatio;
-			that.velocity.add(velocityComponent);
+			this.velocity.add(part.getThrustVector());
 		});
 
-		let limitFactor = 1 - Math.min(1, drag);
-		this.velocity.limit(Math.min(Config.Creature.LinearMaxSpeed, this.velocity.magnitude()) * limitFactor);
 		this.location.add(this.velocity);
 
 		// interact with the world and other creatures

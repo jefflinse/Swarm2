@@ -78,6 +78,27 @@ Part.prototype = {
         this.outputs[1].value = this.nearestFood.angle();
     },
 
+    getThrustVector: function () {
+        // initial thrust vector establishes direction
+        // magnitude of thrust is calculated below
+        let thrustVector = this.relativePosition.copy().invert();
+
+        let distanceRatio = this.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
+        let radiusRatio = this.radius / Config.Creature.Part.MaxRadius;
+
+        // each part contributes 1/Nth of the total thrust for N total parts
+        let thrustMagnitude = Config.Creature.LinearMaxSpeed / this.creature.world.creatures.length;
+
+        // each part's thrust is proportional to the ratio of the part's distance from the creature
+        thrustMagnitude *= distanceRatio;
+
+        // each part's thrust is limited by its weight (radius)
+        thrustMagnitude -= (thrustMagnitude * radiusRatio);
+
+        thrustVector.setMagnitude(thrustMagnitude);
+        return thrustVector;
+    },
+
     _generateDefaultInputs: function () {
         return [
             { value: 0 }, // relative angle delta from creature

@@ -26,7 +26,7 @@ var Config = {
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
-        LinearMaxSpeed: .5,
+        LinearMaxSpeed: 10,
         MaxRadius: 10,
         StartingScanRadius: 50,
         MaxStartingParts: 5,
