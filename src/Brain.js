@@ -64,7 +64,7 @@ Brain.prototype = {
             }
 
             // random activation function mutation
-            if (layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
+            if (layer !== 'input' && layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
                 neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
             }
         }
@@ -95,8 +95,8 @@ Brain.prototype = {
         // randomize the activation functions
         network.neurons().forEach(neuron => {
             if (neuron.layer === 'input') {
-                // force all inputs to [0, 1]
-                neuron.neuron.squash = Synaptic.Neuron.squash.LOGISTIC;
+                // use all input values directly
+                neuron.neuron.squash = Synaptic.Neuron.squash.IDENTITY;
             }
             if (neuron.layer === 'output') {
                 // force all outputs to [-1, 1]

@@ -74,11 +74,11 @@ Part.prototype = {
             }
         }
 
-        this.outputs[0].value = this.radius;
-        this.outputs[1].value = this.relativePosition.magnitude();
-        this.outputs[2].value = this.relativePosition.angle();
-        this.outputs[3].value = this.nearestFood.magnitude();
-        this.outputs[4].value = this.nearestFood.angle();
+        this.outputs[0].value = this.radius / Config.Creature.Part.MaxRadius;
+        this.outputs[1].value = this.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
+        this.outputs[2].value = this.relativePosition.angle() / (Math.PI * 2);
+        this.outputs[3].value = this.nearestFood.magnitude() / this.scanRadius;
+        this.outputs[4].value = this.nearestFood.angle() / (Math.PI * 2);
     },
 
     getThrustVector: function () {
