@@ -116,13 +116,13 @@ Creature.prototype = {
 			});
 
 			// draw line to nearest food
-			// if (parts[i].nearestFood.magnitude() < parts[i].scanRadius) {
-			// 	let absolutePosition = partLocation.copy().add(parts[i].nearestFood);
-			// 	this.graphics.drawLine(partLocation, absolutePosition, {
-			// 		lineWidth: 1,
-			// 		strokeStyle: 'rgba(150, 150, 150, .5)',
-			// 	});
-			// }
+			if (this.parts[i].nearestFood.magnitude() < this.parts[i].scanRadius) {
+				let absolutePosition = partLocation.copy().add(this.parts[i].nearestFood);
+				this.graphics.drawLine(partLocation, absolutePosition, {
+					lineWidth: 1,
+					strokeStyle: 'rgba(150, 150, 150, .5)',
+				});
+			}
 		}
 
 		// // draw pointer (to show what direction the creature is facing)

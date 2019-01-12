@@ -57,7 +57,7 @@ Part.prototype = {
     interact: function () {
 
         this.nearestFood.set(0, 0);
-        var distanceToNearestFood = this.scanRadius + 1;
+        var distanceToNearestFood = this.scanRadius;
         let absolutePosition = this.creature.location.copy().add(this.relativePosition);
 
         // eat
@@ -68,14 +68,17 @@ Part.prototype = {
                     this.creature.eatFood(i);
                 }
                 else if (distanceToFood <= distanceToNearestFood) {
-                    this.nearestFood = this.creature.world.food[i].copy().subtract(this.creature.location);
+                    this.nearestFood = this.creature.world.food[i].copy().subtract(absolutePosition);
                     distanceToNearestFood = distanceToFood;
                 }
             }
         }
 
-        this.outputs[0].value = this.nearestFood.magnitude();
-        this.outputs[1].value = this.nearestFood.angle();
+        this.outputs[0].value = this.radius;
+        this.outputs[1].value = this.relativePosition.magnitude();
+        this.outputs[2].value = this.relativePosition.angle();
+        this.outputs[3].value = this.nearestFood.magnitude();
+        this.outputs[4].value = this.nearestFood.angle();
     },
 
     getThrustVector: function () {
@@ -109,6 +112,9 @@ Part.prototype = {
 
     _generateDefaultOutputs: function () {
         return [
+            { value: 0 }, // radius
+            { value: 0 }, // distance from creature
+            { value: 0 }, // angle from creature
             { value: 0 }, // relative distance to nearest food
             { value: 0 }, // relative angle of nearest food
         ];
