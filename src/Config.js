@@ -7,13 +7,13 @@ var plusOrMinusMax = function (value) {
 var Config = {
     Brain: {
         MinHiddenLayers: 1,
-        MaxHiddenLayers: 1,
+        MaxHiddenLayers: 2,
         MinNodesPerHiddenLayer: 3,
         MaxAdditionalNodesPerHiddenLayer: 3,
     },
     ChanceOf: {
-        ActivationFunctionChange: .01,
-        ConnectionWeightChange: .05,
+        ActivationFunctionChange: .1,
+        ConnectionWeightChange: .5,
         ScanRadiusChange: .03,
     },
     Creature: {
@@ -32,18 +32,18 @@ var Config = {
         },
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => plusOrMinusMax(.3),
+        RandomConnectionWeightChange: () => plusOrMinusMax(.5),
         RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
         GlobalMutationRate: .5,
     },
     World: {
-        FoodDensity: .00015,
+        FoodDensity: .0003,
         GenerationLengthInSec: 10,
         MaxCreatures: 50,
         TickIntervalInMs: 10,
-        ReproductionPercentile: .3,
+        ReproductionPercentile: .4,
     }
 };
 

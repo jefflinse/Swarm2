@@ -64,7 +64,7 @@ Brain.prototype = {
             }
 
             // random activation function mutation
-            if (layer !== 'input' && layer !== 'output' && Math.random() < Config.ChanceOf.ActivationFunctionChange) {
+            if (Math.random() < Config.ChanceOf.ActivationFunctionChange) {
                 neuron.squash = this.squashingFunctions[Math.floor(Math.random() * this.squashingFunctions.length)];
             }
         }
