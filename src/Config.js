@@ -1,13 +1,5 @@
 'use strict';
 
-var coinFlip = function () {
-    return Math.random() < 0.5;
-}
-
-var plusOrMinus = function (value) {
-    return coinFlip() ? value : -value;
-}
-
 var plusOrMinusMax = function (value) {
     return (Math.random() * value * 2) - value;
 }
@@ -15,9 +7,9 @@ var plusOrMinusMax = function (value) {
 var Config = {
     Brain: {
         MinHiddenLayers: 1,
-        MaxHiddenLayers: 2,
+        MaxHiddenLayers: 1,
         MinNodesPerHiddenLayer: 3,
-        MaxAdditionalNodesPerHiddenLayer: 0,
+        MaxAdditionalNodesPerHiddenLayer: 3,
     },
     ChanceOf: {
         ActivationFunctionChange: .01,
@@ -26,7 +18,7 @@ var Config = {
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
-        LinearMaxSpeed: 10,
+        LinearMaxSpeed: 25,
         MaxRadius: 10,
         StartingScanRadius: 50,
         MaxStartingParts: 5,
@@ -40,18 +32,18 @@ var Config = {
         },
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => plusOrMinusMax(.1),
+        RandomConnectionWeightChange: () => plusOrMinusMax(.3),
         RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
         GlobalMutationRate: .5,
     },
     World: {
-        FoodDensity: .0002,
+        FoodDensity: .00015,
         GenerationLengthInSec: 10,
         MaxCreatures: 50,
         TickIntervalInMs: 10,
-        ReproductionPercentile: .5,
+        ReproductionPercentile: .3,
     }
 };
 
