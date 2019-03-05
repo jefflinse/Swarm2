@@ -26,8 +26,8 @@ var Config = {
         Part: {
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,
-            MaxExtendContractSpeed: 5,
-            MaxAngularSpeed: Math.PI / 25,
+            MaxExtendContractSpeed: 2,
+            MaxAngularSpeed: Math.PI / 50,
             MinRadiusForConsumption: 1,
         },
     },
@@ -39,9 +39,9 @@ var Config = {
         GlobalMutationRate: .5,
     },
     World: {
-        FoodDensity: .0003,
+        FoodDensity: .00035,
         GenerationLengthInSec: 10,
-        MaxCreatures: 50,
+        MaxCreatures: 25,
         TickIntervalInMs: 10,
         ReproductionPercentile: .4,
     }

@@ -19,7 +19,11 @@ function Creature(world, brain, parts, inherited)
 	this.brain = brain || new Brain();
 
 	// connect the parts to the brain
-	let inputs = [], outputs = [];
+	let inputs = [
+		{ value: 0 },  // angle of velocity vector
+		{ value: 0 },  // magnitude of velocity vector
+	];
+	let outputs = [];
 	this.parts.forEach(part => {
 		inputs = inputs.concat(part.inputs);
 		outputs = outputs.concat(part.outputs);
@@ -70,6 +74,8 @@ Creature.prototype = {
 	interact: function()
 	{
 		this.parts.forEach(part => part.interact());
+		this.brain.inputs[0].value = this.velocity.angle();
+		this.brain.inputs[1].value = this.velocity.magnitude();
 	},
 
 	eatFood: function(foodId) {
