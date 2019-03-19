@@ -10,7 +10,7 @@ function Part(specifics) {
     this.inputs = this._generateDefaultInputs();
     this.outputs = this._generateDefaultOutputs();
     this.radius = specifics.radius || Config.Creature.Part.MaxRadius;
-    this.scanRadius = specifics.scanRadius || Config.Creature.StartingScanRadius;
+    this.scanRadius = Config.Creature.StartingScanRadius;
     this.nearestFood = new Vector(0, 0).setMagnitude(Config.Creature.StartingScanRadius);
 }
 
@@ -52,6 +52,7 @@ Part.prototype = {
         // part radius
         let newRadius = Math.min(Config.Creature.Part.MaxRadius, this.radius + (dr * Config.Creature.MaxRadialChange));
         this.radius = Math.abs(newRadius);
+        this.scanRadius = (this.radius / Config.Creature.Part.MaxRadius) * Config.Creature.StartingScanRadius;
     },
 
     interact: function () {
