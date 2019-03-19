@@ -41,21 +41,23 @@ Part.prototype = {
         Debug.assert(da !== NaN, "da is NaN");
         Debug.assert(dr !== NaN, "dr is NaN");
 
-        // part distance from creature
-        let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.Part.MaxExtendContractSpeed);
-        this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.Part.MaxDistanceFromCreature);
-
-        // part angle from creature
-        let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
-        this.relativePosition.setAngle(newAngle);
-
         // part radius
         let newRadius = Math.min(Config.Creature.Part.MaxRadius, this.radius + (dr * Config.Creature.MaxRadialChange));
         this.radius = Math.abs(newRadius);
         this.scanRadius = (this.radius / Config.Creature.Part.MaxRadius) * Config.Creature.StartingScanRadius;
+
+        // part distance from creature
+        let newDistance = this.relativePosition.magnitude() + (ds * Config.Creature.Part.MaxExtendContractSpeed);
+        newDistance = Math.max(newDistance, this.creature.radius + this.radius);
+        this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.Part.MaxDistanceFromCreature);
+
+        // part angle from creature
+        da = ((Config.Creature.Part.MaxRadius - this.radius) / Config.Creature.Part.MaxRadius) * da;
+        let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
+        this.relativePosition.setAngle(newAngle);
     },
 
-    interact: function () {
+    interact: function  () {
 
         this.nearestFood.set(0, 0);
         var distanceToNearestFood = this.scanRadius;
