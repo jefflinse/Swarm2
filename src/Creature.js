@@ -65,6 +65,7 @@ Creature.prototype = {
 			this.velocity.add(part.getThrustVector());
 		});
 
+		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
 
 		// interact with the world and other creatures

@@ -8,7 +8,7 @@ var Config = {
     Brain: {
         MinHiddenLayers: 1,
         MaxHiddenLayers: 2,
-        MinNodesPerHiddenLayer: 3,
+        MinNodesPerHiddenLayer: 5,
         MaxAdditionalNodesPerHiddenLayer: 3,
     },
     ChanceOf: {
@@ -18,7 +18,7 @@ var Config = {
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
-        LinearMaxSpeed: 25,
+        LinearMaxSpeed: 5,
         MaxRadius: 10,
         StartingScanRadius: 50,
         MaxStartingParts: 5,
@@ -27,7 +27,7 @@ var Config = {
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,
             MaxExtendContractSpeed: 2,
-            MaxAngularSpeed: Math.PI / 50,
+            MaxAngularSpeed: Math.PI / 150,
             MinRadiusForConsumption: 1,
         },
     },
