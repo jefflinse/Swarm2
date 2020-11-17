@@ -1,5 +1,3 @@
 #!/bin/bash
-rm -rf bin
-mkdir bin
 cp src/template.html bin/index.html
 browserify src/App.js > bin/bundle.js
