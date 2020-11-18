@@ -1,3 +1,0 @@
-#!/bin/bash
-cp src/template.html bin/index.html
-browserify src/App.js > bin/bundle.js
