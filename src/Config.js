@@ -27,7 +27,7 @@ var Config = {
         MaxStartingParts: 6,
         MaxRadialChange: .01,
         Part: {
-            EnergyPerMovement: 1,
+            EnergyPerMovement: .1,
             EnergyForExisting: .01,
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,

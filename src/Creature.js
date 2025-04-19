@@ -20,6 +20,7 @@ function Creature(world, brain, parts, inherited)
 
 	// connect the parts to the brain
 	let inputs = [
+		{ value: 0 },  // creature's relative energy level
 		{ value: 0 },  // angle of velocity vector
 		{ value: 0 },  // magnitude of velocity vector
 	];
@@ -101,8 +102,9 @@ Creature.prototype = {
 	interact: function()
 	{
 		this.parts.forEach(part => part.interact());
-		this.brain.inputs[0].value = this.velocity.angle();
-		this.brain.inputs[1].value = this.velocity.magnitude();
+		this.brain.inputs[0].value = this.energy / Config.Creature.StartingEnergy;
+		this.brain.inputs[1].value = this.velocity.angle();
+		this.brain.inputs[2].value = this.velocity.magnitude();
 	},
 
 	subtractEnergy: function(amount) {
