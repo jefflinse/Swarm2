@@ -29,9 +29,9 @@ var Config = {
         MaxRadialChange: .01,
         Part: {
             EnergyPerMovement: .1,
-            EnergyForExisting: .1,
+            EnergyForExisting: .2,
             MaxRadius: 7,
-            MaxDistanceFromCreature: 25,
+            MaxDistanceFromCreature: 30,
             MaxExtendContractSpeed: 2,
             MaxAngularSpeed: Math.PI / 100,
             MinRadiusForConsumption: 1,

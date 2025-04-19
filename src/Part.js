@@ -61,8 +61,9 @@ Part.prototype = {
         let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
         this.relativePosition.setAngle(newAngle);
 
-        // energy spent is proportional to the angle change
-        return (Math.abs(da) / Config.Creature.AngularMaxSpeed) * Config.Creature.Part.EnergyPerMovement;
+        // energy spent is proportional to the angle change x radius
+        return ((Math.abs(da) / Config.Creature.AngularMaxSpeed) * Config.Creature.Part.EnergyPerMovement)
+            + ((this.radius / Config.Creature.Part.MaxRadius) * Config.Creature.Part.EnergyPerMovement);
     },
 
     interact: function  () {
