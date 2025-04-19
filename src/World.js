@@ -54,8 +54,8 @@ function World(canvas) {
 			}
 
 			if (that.food[i].x === null || that.food[i].y === null) {
-				that.food[i].x = Math.random() * (that.width - 100) + 50;
-				that.food[i].y = Math.random() * (that.height - 100) + 50;
+				that.food[i].x = Math.random() * that.width;
+				that.food[i].y = Math.random() * that.height;
 			}
 
 			that.graphics.drawCircle(that.food[i], 3, {

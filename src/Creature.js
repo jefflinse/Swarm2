@@ -34,7 +34,7 @@ function Creature(world, brain, parts, inherited)
 
 	this.radius = inherited.radius || Config.Creature.MaxRadius;
 	this.velocity = new Vector(0, 0).random();
-	this.location = this._generateRandomLocation();
+	this.location = inherited.location || this._generateRandomLocation();
 	this.color = inherited.color || this._generateRandomColor();
 
 	this.reset();
@@ -67,6 +67,16 @@ Creature.prototype = {
 
 		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
+		if (this.location.x > this.world.width) {
+			this.location.x = 0;
+		} else if (this.location.x < 0) {
+			this.location.x = this.world.width;
+		}
+		if (this.location.y > this.world.height) {
+			this.location.y = 0;
+		} else if (this.location.y < 0) {
+			this.location.y = this.world.height;
+		}
 
 		// interact with the world and other creatures
 		this.interact();
@@ -91,6 +101,10 @@ Creature.prototype = {
 		let creature = new Creature(this.world, newBrain, newParts, {
 			color: this.color,
 			radius: this.radius,
+			location: new Vector(
+				this.location.x + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2), 
+				this.location.y + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2)
+			),
 		});
 		creature.mutate();
 		return creature;
@@ -132,13 +146,17 @@ Creature.prototype = {
 			}
 		}
 
-		// // draw pointer (to show what direction the creature is facing)
-		// let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 3);
-		// let absoluteTarget = this.location.copy().add(relativeTarget);
-		// this.graphics.drawLine(this.location, absoluteTarget, {
-		// 	lineWidth: 3,
-		// 	strokeStyle: 'black',
-		// });
+		// draw pointer (to show what direction the creature is facing)
+		let relativeTarget = this.velocity.copy().setMagnitude(this.radius + 5);
+		let absoluteTarget = this.location.copy().add(relativeTarget);
+		this.graphics.drawLine(this.location, absoluteTarget, {
+			lineWidth: 6,
+			strokeStyle: 'black',
+		});
+		this.graphics.drawLine(this.location, absoluteTarget, {
+			lineWidth: 2,
+			strokeStyle: 'white',
+		});
 
 		// draw self
 		this.graphics.drawCircle(this.location, this.radius, {
@@ -193,8 +211,8 @@ Creature.prototype = {
 	_generateRandomLocation: function ()
 	{
 		return new Vector(
-			Math.random() * (this.world.width - 100) + 50,
-			Math.random() * (this.world.height - 100) + 50
+			Math.random() * this.world.width,
+			Math.random() * this.world.height
 		);
 	},
 }

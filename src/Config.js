@@ -6,28 +6,28 @@ var plusOrMinusMax = function (value) {
 
 var Config = {
     Brain: {
-        MinHiddenLayers: 1,
-        MaxHiddenLayers: 2,
+        MinHiddenLayers: 2,
+        MaxHiddenLayers: 3,
         MinNodesPerHiddenLayer: 5,
-        MaxAdditionalNodesPerHiddenLayer: 3,
+        MaxAdditionalNodesPerHiddenLayer: 5,
     },
     ChanceOf: {
-        ActivationFunctionChange: .1,
-        ConnectionWeightChange: .5,
+        ActivationFunctionChange: .2,
+        ConnectionWeightChange: .75,
         ScanRadiusChange: .03,
     },
     Creature: {
         AngularMaxSpeed: Math.PI / 3,
-        LinearMaxSpeed: 5,
+        LinearMaxSpeed: 8,
         MaxRadius: 10,
         StartingScanRadius: 50,
-        MaxStartingParts: 5,
-        MaxRadialChange: .5,
+        MaxStartingParts: 6,
+        MaxRadialChange: .01,
         Part: {
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,
             MaxExtendContractSpeed: 2,
-            MaxAngularSpeed: Math.PI / 150,
+            MaxAngularSpeed: Math.PI / 100,
             MinRadiusForConsumption: 1,
         },
     },
@@ -36,14 +36,14 @@ var Config = {
         RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
-        GlobalMutationRate: .5,
+        GlobalMutationRate: .75,
     },
     World: {
-        FoodDensity: .00035,
+        FoodDensity: .00100,
         GenerationLengthInSec: 10,
-        MaxCreatures: 25,
+        MaxCreatures: 50,
         TickIntervalInMs: 10,
-        ReproductionPercentile: .4,
+        ReproductionPercentile: .3,
     }
 };
 
