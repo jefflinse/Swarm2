@@ -17,6 +17,9 @@ var Config = {
         ScanRadiusChange: .03,
     },
     Creature: {
+        StartingEnergy: 1000,
+        EnergyPerFood: 100,
+        EnergyPerMovement: 1,
         AngularMaxSpeed: Math.PI / 3,
         LinearMaxSpeed: 8,
         MaxRadius: 10,
@@ -24,6 +27,8 @@ var Config = {
         MaxStartingParts: 6,
         MaxRadialChange: .01,
         Part: {
+            EnergyPerMovement: 1,
+            EnergyForExisting: .01,
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,
             MaxExtendContractSpeed: 2,

@@ -68,6 +68,12 @@ Graphics.prototype = {
         this.ctx.fillText(text, 10, 20);
 
         this._postDraw();
+    },
+
+    drawText: function (text, origin, maxWidth = undefined, props) {
+        this._preDraw(props);
+        this.ctx.fillText(text, origin.x, origin.y, maxWidth);
+        this._postDraw();
     }
 }
 

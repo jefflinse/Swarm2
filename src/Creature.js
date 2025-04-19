@@ -53,6 +53,10 @@ Creature.prototype = {
 
 	tick: function()
 	{
+		if (this.subtractEnergy(0) <= 0) {
+			return;
+		}
+
 		var that = this;
 
 		// feed the neural network forward
@@ -60,13 +64,19 @@ Creature.prototype = {
 
 		this.velocity.set(0, 0);
 
+		let partsEnergySpent = 0;
 		this.parts.forEach(part => {
-			part.tick();
 			this.velocity.add(part.getThrustVector());
+			partsEnergySpent += part.tick();
 		});
+
+		if (this.subtractEnergy(partsEnergySpent) <= 0) {
+			return;
+		}
 
 		this.velocity.limit(Config.Creature.LinearMaxSpeed);
 		this.location.add(this.velocity);
+
 		if (this.location.x > this.world.width) {
 			this.location.x = 0;
 		} else if (this.location.x < 0) {
@@ -80,6 +90,12 @@ Creature.prototype = {
 
 		// interact with the world and other creatures
 		this.interact();
+
+		// expend some energy just for existing
+		this.subtractEnergy(this.parts.length * Config.Creature.Part.EnergyForExisting);
+
+		// energy spent is the relative magnitude of the velocity multiplied by the energy per movement
+		this.subtractEnergy((this.velocity.magnitude() / Config.Creature.LinearMaxSpeed) * Config.Creature.EnergyPerMovement);
 	},
 
 	interact: function()
@@ -89,9 +105,21 @@ Creature.prototype = {
 		this.brain.inputs[1].value = this.velocity.magnitude();
 	},
 
+	subtractEnergy: function(amount) {
+		this.energy -= amount;
+		if (this.energy <= 0) {
+			this.energy = 0;
+			this.velocity.set(0, 0);
+			this.color = 'rgb(120, 120, 120)';
+			return
+		}
+
+		return this.energy;
+	},
+
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
-		this.foodEaten++;
+		this.energy += Config.Creature.EnergyPerFood;
 	},
 
 	clone: function()
@@ -164,6 +192,14 @@ Creature.prototype = {
 			globalAlpha: 1,
 			lineWidth: 1
 		});
+
+		// put energy amount on the creature
+		this.graphics.drawText(Math.trunc((this.energy / Config.Creature.StartingEnergy) * 100), this.location, undefined, {
+			font: 'bold 12px sans-serif',
+			fillStyle: 'white',
+			textAlign: 'center',
+			textBaseline: 'middle',
+		});
 	},
 
 	highlight: function()
@@ -178,12 +214,12 @@ Creature.prototype = {
 
 	fitness: function()
 	{
-		return this.foodEaten;
+		return this.energy;
 	},
 
 	reset: function()
 	{
-		this.foodEaten = 0;
+		this.energy = Config.Creature.StartingEnergy;
 	},
 
 	_generateParts: function (numParts) {
