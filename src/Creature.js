@@ -36,7 +36,7 @@ function Creature(world, brain, parts, inherited)
 	this.radius = inherited.radius || Config.Creature.MaxRadius;
 	this.velocity = new Vector(0, 0).random();
 	this.location = inherited.location || this._generateRandomLocation();
-	this.color = inherited.color || this._generateRandomColor();
+	this.color = inherited.color ? this._copyColor(inherited.color) : this._generateRandomColor();
 
 	this.reset();
 }
@@ -97,6 +97,13 @@ Creature.prototype = {
 
 		// energy spent is the relative magnitude of the velocity multiplied by the energy per movement
 		this.subtractEnergy((this.velocity.magnitude() / Config.Creature.LinearMaxSpeed) * Config.Creature.EnergyPerMovement);
+
+		if (this.energy > Config.Creature.StartingEnergy * Config.Creature.ReproductionEnergyThreshold) {
+			this.energy -= Config.Creature.StartingEnergy;
+			let clone = this.clone();
+			clone.reset();
+			this.world.creatures.push(clone);
+		}
 	},
 
 	interact: function()
@@ -110,13 +117,20 @@ Creature.prototype = {
 	subtractEnergy: function(amount) {
 		this.energy -= amount;
 		if (this.energy <= 0) {
-			this.energy = 0;
-			this.velocity.set(0, 0);
-			this.color = 'rgb(120, 120, 120)';
+			this.die();
 			return
 		}
 
 		return this.energy;
+	},
+
+	die: function()
+	{
+		this.energy = 0;
+		this.velocity.set(0, 0);
+		this.color = [120, 120, 120];
+		this.world.creatures = this.world.creatures.filter(creature => creature !== this);
+
 	},
 
 	eatFood: function(foodId) {
@@ -129,14 +143,18 @@ Creature.prototype = {
 		let newBrain = this.brain.clone();
 		let newParts = this.parts.map(part => part.clone());
 		let creature = new Creature(this.world, newBrain, newParts, {
-			color: this.color,
+			color: this._copyColor(this.color),
 			radius: this.radius,
 			location: new Vector(
 				this.location.x + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2), 
 				this.location.y + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2)
 			),
 		});
-		creature.mutate();
+		
+		if (creature.mutate()) {
+			creature.color = this._generateDriftColor(this.color);
+		}
+
 		return creature;
 	},
 
@@ -144,7 +162,10 @@ Creature.prototype = {
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
 			// insane in the membrane
 			this.brain.mutate();
+			return true;
 		}
+
+		return false;
 	},
 
 	draw: function()
@@ -155,7 +176,7 @@ Creature.prototype = {
 
 			// draw part
 			this.graphics.drawCircle(partLocation, this.parts[i].radius, {
-				fillStyle: this.color,
+				fillStyle: 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')',
 				globalAlpha: .25,
 				lineWidth: 1,
 			});
@@ -163,7 +184,7 @@ Creature.prototype = {
 			// draw line to part
 			this.graphics.drawLine(this.location, partLocation, {
 				lineWidth: 2,
-				strokeStyle: this.color,
+				strokeStyle: 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')',
 			});
 
 			// draw line to nearest food
@@ -190,7 +211,7 @@ Creature.prototype = {
 
 		// draw self
 		this.graphics.drawCircle(this.location, this.radius, {
-			fillStyle: this.color,
+			fillStyle: 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')',
 			globalAlpha: 1,
 			lineWidth: 1
 		});
@@ -209,7 +230,7 @@ Creature.prototype = {
 		// draw a semitransparent "halo" around the creature, to make it stand out
 		this.graphics.drawCircle(this.location, Config.Creature.Part.MaxDistanceFromCreature + this.radius, {
 			lineWidth: 1,
-			fillStyle: this.color,
+			fillStyle: 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')',
 			globalAlpha: .2,
 		})
 	},
@@ -240,10 +261,29 @@ Creature.prototype = {
 
 	_generateRandomColor: function ()
 	{
-		return 'rgb(' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ',' +
-			Math.floor(Math.random() * 255) + ')';
+		return [
+			Math.floor(Math.random() * 255),
+			Math.floor(Math.random() * 255),
+			Math.floor(Math.random() * 255),
+		];
+	},
+
+	_generateDriftColor: function (source)
+	{
+		return [
+			Math.min(Math.max(0, source[0] + Math.floor(Math.random() * 50) - 25), 255),
+			Math.min(Math.max(0, source[1] + Math.floor(Math.random() * 50) - 25), 255),
+			Math.min(Math.max(0, source[2] + Math.floor(Math.random() * 50) - 25), 255),
+		];
+	},
+
+	_copyColor: function (source)
+	{
+		return [
+			source[0],
+			source[1],
+			source[2],
+		];
 	},
 
 	_generateRandomLocation: function ()

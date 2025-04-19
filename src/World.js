@@ -70,61 +70,30 @@ function World(canvas) {
 			creature.draw();
 		});
 
-		that.creatures[0].highlight();
+		// that.creatures[0].highlight();
 	}
 
 	var newGeneration = function () {
 		console.log("new generation");
 		that.generation++;
 
-		// sort creatures by fitness
-		var newCreatures = that.creatures.filter(creature => {
-			// remove "dead" creatures
-			return creature.fitness() > 0;
-		}).sort((a, b) => {
-			// sort by best
-			return b.fitness() - a.fitness();
-		}).slice(0, Math.floor(Config.World.MaxCreatures * Config.World.ReproductionPercentile));
-
-		// reproduce
-		var numToClone = Math.min(Config.World.MaxCreatures / 2, newCreatures.length);
-		for (var i = 0; i < numToClone; i++) {
-			newCreatures.push(newCreatures[i].clone());
-		}
-
-		// make sure we have max creatures by cloning the best ones again
-		numToClone = Config.World.MaxCreatures - newCreatures.length;
-		for (var i = 0; i < numToClone; i++) {
-			newCreatures.push(newCreatures[i].clone());
-		}
-
 		// collect stats
 		var colors = {};
-		for (var i = 0; i < newCreatures.length; i++) {
-			colors[newCreatures[i].color] = colors[newCreatures[i].color] ? colors[newCreatures[i].color]++ : 1;
+		for (var i = 0; i < that.creatures.length; i++) {
+			colors[that.creatures[i].color] = colors[that.creatures[i].color] ? colors[that.creatures[i].color]++ : 1;
 		}
 
 		that.numSpecies = Object.keys(colors).length;
 		if (that.numSpecies == 1) {
 			that.era++;
-
-			// randomize colors
-			for (var i = 0; i < newCreatures.length; i++) {
-				newCreatures[i].color = 'rgb(' +
-					Math.floor(Math.random() * 255) + ',' +
-					Math.floor(Math.random() * 255) + ',' +
-					Math.floor(Math.random() * 255) + ')';
-			}
-
-			that.numSpecies = newCreatures.length;
 		}
 
-		// reset
-		newCreatures.forEach((creature) => {
-			creature.reset();
-		});
+		// // reset
+		// newCreatures.forEach((creature) => {
+		// 	creature.reset();
+		// });
 
-		that.creatures = newCreatures;
+		// that.creatures = newCreatures;
 		that.ticks = 1;
 	}
 

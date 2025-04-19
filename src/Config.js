@@ -18,8 +18,9 @@ var Config = {
     },
     Creature: {
         StartingEnergy: 1000,
-        EnergyPerFood: 100,
-        EnergyPerMovement: 1,
+        EnergyPerFood: 150,
+        EnergyPerMovement: .5,
+        ReproductionEnergyThreshold: 1.3,
         AngularMaxSpeed: Math.PI / 3,
         LinearMaxSpeed: 8,
         MaxRadius: 10,
@@ -28,7 +29,7 @@ var Config = {
         MaxRadialChange: .01,
         Part: {
             EnergyPerMovement: .1,
-            EnergyForExisting: .01,
+            EnergyForExisting: .1,
             MaxRadius: 7,
             MaxDistanceFromCreature: 25,
             MaxExtendContractSpeed: 2,
@@ -41,10 +42,10 @@ var Config = {
         RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
-        GlobalMutationRate: .75,
+        GlobalMutationRate: .66,
     },
     World: {
-        FoodDensity: .00100,
+        FoodDensity: .00125,
         GenerationLengthInSec: 10,
         MaxCreatures: 50,
         TickIntervalInMs: 10,
