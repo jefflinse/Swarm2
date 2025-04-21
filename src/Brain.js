@@ -59,7 +59,11 @@ Brain.prototype = {
             for (var j in neuron.connections.projected) {
                 let connection = neuron.connections.projected[j];
                 if (Math.random() < Config.ChanceOf.ConnectionWeightChange) {
-                    connection.weight += Config.Fluxuation.RandomConnectionWeightChange();
+                    const change = Config.Fluxuation.RandomConnectionWeightChange();
+                    const newWeight = connection.weight + change;
+                    // console.log('weight ' + connection.weight + ' -> ' + newWeight + ' (' + change + ')');
+                    connection.weight = newWeight;
+                    // console.log('connection weight: ' + neuron.connections.projected[j].weight + ' (should be ' + newWeight + ')');
                 }
             }
 

@@ -100,7 +100,7 @@ Creature.prototype = {
 
 		if (this.energy > Config.Creature.StartingEnergy * Config.Creature.ReproductionEnergyThreshold) {
 			this.energy -= Config.Creature.StartingEnergy;
-			let clone = this.clone();
+			let clone = this.clone(true);
 			clone.reset();
 			this.world.creatures.push(clone);
 		}
@@ -138,20 +138,20 @@ Creature.prototype = {
 		this.energy += Config.Creature.EnergyPerFood;
 	},
 
-	clone: function()
+	clone: function(shouldMutate = false, nearby = true)
 	{
 		let newBrain = this.brain.clone();
 		let newParts = this.parts.map(part => part.clone());
 		let creature = new Creature(this.world, newBrain, newParts, {
 			color: this._copyColor(this.color),
 			radius: this.radius,
-			location: new Vector(
+			location: nearby ? new Vector(
 				this.location.x + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2), 
 				this.location.y + (Math.random() * Config.Creature.Part.MaxDistanceFromCreature * 4) - (Config.Creature.Part.MaxDistanceFromCreature * 2)
-			),
+			) : this.location.copy(),
 		});
 		
-		if (creature.mutate()) {
+		if (shouldMutate && creature.mutate()) {
 			creature.color = this._generateDriftColor(this.color);
 		}
 
@@ -159,13 +159,27 @@ Creature.prototype = {
 	},
 
 	mutate: function () {
+		let mutated = false;
+
+		// if (Math.random() < Config.ChanceOf.NewPartGrowth) {
+		// 	// grow a new part
+		// 	let part = new Part();
+		// 	part.creature = this;
+		// 	part.relativePosition = this.velocity.copy().setMagnitude(this.radius + part.radius);
+		// 	part.scanRadius = part.radius / Config.Creature.Part.MaxRadius * Config.Creature.StartingScanRadius;
+		// 	this.parts.push(part);
+		// 	console.log("grew new part");
+		// 	mutated = true;
+		// }
+
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
 			// insane in the membrane
 			this.brain.mutate();
-			return true;
+			console.log("mutated brain");
+			mutated = true;
 		}
 
-		return false;
+		return mutated;
 	},
 
 	draw: function()

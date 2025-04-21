@@ -52,13 +52,14 @@ Part.prototype = {
         this.relativePosition.setMagnitude(newDistance).limit(Config.Creature.Part.MaxDistanceFromCreature);
 
         // part angle from creature
-        da = ((Config.Creature.Part.MaxRadius - this.radius) / Config.Creature.Part.MaxRadius) * da;
+        // da = ((Config.Creature.Part.MaxRadius - this.radius) / Config.Creature.Part.MaxRadius) * da;
         if (da <= 0) {
             da = Math.max(da, -Config.Creature.AngularMaxSpeed);
         } else {
             da = Math.min(da, Config.Creature.AngularMaxSpeed);
         }
-        let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
+        // let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
+        let newAngle = this.relativePosition.angle() + da;
         this.relativePosition.setAngle(newAngle);
 
         // energy spent is proportional to the angle change x radius
