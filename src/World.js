@@ -44,11 +44,15 @@ function World(canvas) {
 			'Era: ' + that.era + '   ' +
 			'Generation: ' + that.generation + '   ' +
 			'Creatures: ' + that.creatures.length + '   ' +
-			'Species: ' + that.numSpecies);
+			'Species: ' + that.numSpecies + '   ' +
+			'Food: ' + that.food.filter(f => f !== null && f.x !== null).length);
 	}
 
 	var populateFood = function () {
-		for (var i = 0; i < that.food.length; i++) {
+		const numToPopulate = Math.floor(
+			(Config.World.FoodRegenerationRatePerTick * that.food.length) * (Config.World.MaxCreatures / that.creatures.length),
+		);
+		for (var i = 0, numPopulated = 0; i < that.food.length && numPopulated < numToPopulate; i++) {
 			if (that.food[i] === null) {
 				that.food[i] = new Vector(null, null);
 			}
@@ -56,21 +60,29 @@ function World(canvas) {
 			if (that.food[i].x === null || that.food[i].y === null) {
 				that.food[i].x = Math.random() * that.width;
 				that.food[i].y = Math.random() * that.height;
-			}
 
-			that.graphics.drawCircle(that.food[i], 3, {
-				fillStyle: '#DDDDDD',
-			});
+				numPopulated++;
+			}
 		}
+
+		that.food.filter((f) => f !== null && f.x !== null).forEach((f) => {
+			that.graphics.drawCircle(f, 3, {
+				fillStyle: '#555555',
+			});
+		});
 	}
 
 	var updateCreatures = function () {
+		let best = that.creatures[0]; 
 		that.creatures.forEach(creature => {
 			creature.tick();
 			creature.draw();
+			if (creature.foodEaten > best.foodEaten) {
+				best = creature;
+			}
 		});
 
-		// that.creatures[0].highlight();
+		best.highlight();
 	}
 
 	var newGeneration = function () {

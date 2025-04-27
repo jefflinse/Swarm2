@@ -25,7 +25,8 @@ Graphics.prototype = {
 
     drawBackground: function () {
         this.drawRectangle(0, 0, this.width, this.height, {
-            fillStyle: '#f4f4f4',
+            // fillStyle: '#f4f4f4',
+            fillStyle: '#333333',
         });
     },
 

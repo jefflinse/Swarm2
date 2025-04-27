@@ -51,6 +51,8 @@ Creature.prototype = {
 	velocity: undefined,
 	color: undefined,
 	parts: undefined,
+	ticks: 0,
+	foodEaten: 0,
 
 	tick: function()
 	{
@@ -104,6 +106,8 @@ Creature.prototype = {
 			clone.reset();
 			this.world.creatures.push(clone);
 		}
+
+		this.ticks++;
 	},
 
 	interact: function()
@@ -130,12 +134,17 @@ Creature.prototype = {
 		this.velocity.set(0, 0);
 		this.color = [120, 120, 120];
 		this.world.creatures = this.world.creatures.filter(creature => creature !== this);
-
+		if (this.world.creatures.length < Config.World.MaxCreatures && this.foodEaten < 5) {
+			const replacement = new Creature(this.world);
+			replacement.reset();
+			this.world.creatures.push(replacement);
+		}
 	},
 
 	eatFood: function(foodId) {
 		this.world.food[foodId].x = null; // invalidate
 		this.energy += Config.Creature.EnergyPerFood;
+		this.foodEaten++;
 	},
 
 	clone: function(shouldMutate = false, nearby = true)
@@ -175,7 +184,7 @@ Creature.prototype = {
 		if (Math.random() < Config.Mutation.GlobalMutationRate) {
 			// insane in the membrane
 			this.brain.mutate();
-			console.log("mutated brain");
+			// console.log("mutated brain");
 			mutated = true;
 		}
 
@@ -184,6 +193,13 @@ Creature.prototype = {
 
 	draw: function()
 	{
+		// drop shadow
+		this.graphics.drawCircle(this.location.copy().add(new Vector(3, 3)), this.radius, {
+			fillStyle: 'rgb(0, 0, 0)',
+			globalAlpha: 1,
+			lineWidth: 1
+		});
+		
 		// draw parts
 		for (let i = 0; i < this.parts.length; i++) {
 			let partLocation = this.location.copy().add(this.parts[i].relativePosition);
@@ -247,6 +263,14 @@ Creature.prototype = {
 			fillStyle: 'rgb(' + this.color[0] + ',' + this.color[1] + ',' + this.color[2] + ')',
 			globalAlpha: .2,
 		})
+
+		// show the count of food eaten at the top center of the shadow
+		this.graphics.drawText(this.foodEaten, this.location.copy().add(new Vector(0, -Config.Creature.Part.MaxDistanceFromCreature)), undefined, {
+			font: 'bold 12px sans-serif',
+			fillStyle: 'white',
+			textAlign: 'center',
+			textBaseline: 'middle',
+		});
 	},
 
 	fitness: function()
@@ -285,9 +309,9 @@ Creature.prototype = {
 	_generateDriftColor: function (source)
 	{
 		return [
-			Math.min(Math.max(0, source[0] + Math.floor(Math.random() * 50) - 25), 255),
-			Math.min(Math.max(0, source[1] + Math.floor(Math.random() * 50) - 25), 255),
-			Math.min(Math.max(0, source[2] + Math.floor(Math.random() * 50) - 25), 255),
+			Math.min(Math.max(0, source[0] + Math.floor(Math.random() * 70) - 35), 255),
+			Math.min(Math.max(0, source[1] + Math.floor(Math.random() * 70) - 35), 255),
+			Math.min(Math.max(0, source[2] + Math.floor(Math.random() * 70) - 35), 255),
 		];
 	},
 

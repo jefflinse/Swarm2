@@ -59,12 +59,14 @@ Part.prototype = {
             da = Math.min(da, Config.Creature.AngularMaxSpeed);
         }
         // let newAngle = (this.relativePosition.angle() + (da * Config.Creature.Part.MaxAngularSpeed)) % (Math.PI * 2);
-        let newAngle = this.relativePosition.angle() + da;
+        // limit angle change by the part's radius
+        let newAngle = this.relativePosition.angle() + (da * (1-(this.radius / Config.Creature.Part.MaxRadius)));
         this.relativePosition.setAngle(newAngle);
 
-        // energy spent is proportional to the angle change x radius
-        return ((Math.abs(da) / Config.Creature.AngularMaxSpeed) * Config.Creature.Part.EnergyPerMovement)
-            + ((this.radius / Config.Creature.Part.MaxRadius) * Config.Creature.Part.EnergyPerMovement);
+        // energy spent is proportional to the distance and radius of the part
+        return Config.Creature.Part.EnergyPerMovement
+            * (this.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature)
+            * (this.radius / Config.Creature.Part.MaxRadius);
     },
 
     interact: function  () {
@@ -75,7 +77,7 @@ Part.prototype = {
 
         // eat
         for (var i in this.creature.world.food) {
-            if (this.creature.world.food[i].x !== null) {
+            if (this.creature.world.food[i] !== null && this.creature.world.food[i].x !== null) {
                 let distanceToFood = absolutePosition.distanceBetween(this.creature.world.food[i]);
                 if (this.radius > Config.Creature.Part.MinRadiusForConsumption && distanceToFood <= this.radius) {
                     this.creature.eatFood(i);
@@ -100,18 +102,38 @@ Part.prototype = {
         let thrustVector = this.relativePosition.copy().invert();
 
         let distanceRatio = this.relativePosition.magnitude() / Config.Creature.Part.MaxDistanceFromCreature;
-        let radiusRatio = this.radius / Config.Creature.Part.MaxRadius;
+        let weightRatio = this.radius / Config.Creature.Part.MaxRadius;
 
         // each part contributes 1/Nth of the total thrust for N total parts
-        let thrustMagnitude = Config.Creature.LinearMaxSpeed / this.creature.world.creatures.length;
+        let thrustMagnitude = Config.Creature.LinearMaxSpeed / this.creature.parts.length;
 
         // each part's thrust is proportional to the ratio of the part's distance from the creature
         thrustMagnitude *= distanceRatio;
 
-        // each part's thrust is limited by its weight (radius)
-        thrustMagnitude -= (thrustMagnitude * radiusRatio);
+        // thrus magnitude must always be positive
+        thrustMagnitude = Math.max(thrustMagnitude, 0);
 
         thrustVector.setMagnitude(thrustMagnitude);
+
+        // resistance vector is opposite of thrust vector
+        let resistenceVector = thrustVector.copy().invert().normalize();
+
+        // each part contributes 1/Nth of the total resistance for N total parts
+        let resistenceMagnitude = Config.Creature.LinearMaxSpeed / this.creature.parts.length;
+
+        // resistance is proportional to the part's radius
+        resistenceMagnitude *= weightRatio;
+
+        // resistance is also proportional to the distance from the creature
+        resistenceMagnitude *= distanceRatio;
+
+        // resistance must always be positive
+        resistenceMagnitude = Math.max(resistenceMagnitude, 0);
+
+        resistenceVector.setMagnitude(resistenceMagnitude);
+
+        thrustVector.add(resistenceVector)
+
         return thrustVector;
     },
 

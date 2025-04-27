@@ -6,9 +6,9 @@ var plusOrMinusMax = function (value) {
 
 var Config = {
     Brain: {
-        MinHiddenLayers: 1,
-        MaxHiddenLayers: 1,
-        MinNodesPerHiddenLayer: 5,
+        MinHiddenLayers: 2,
+        MaxHiddenLayers: 3,
+        MinNodesPerHiddenLayer: 8,
         MaxAdditionalNodesPerHiddenLayer: 5,
     },
     ChanceOf: {
@@ -18,35 +18,36 @@ var Config = {
         ScanRadiusChange: .03,
     },
     Creature: {
-        StartingEnergy: 1000,
+        StartingEnergy: 500,
         EnergyPerFood: 100,
-        EnergyPerMovement: .5,
-        ReproductionEnergyThreshold: 1.3,
+        EnergyPerMovement: .20,
+        ReproductionEnergyThreshold: 1.5,
         AngularMaxSpeed: Math.PI / 180,
-        LinearMaxSpeed: 8,
+        LinearMaxSpeed: 1,
         MaxRadius: 10,
         StartingScanRadius: 50,
         MaxStartingParts: 6,
         MaxRadialChange: .01,
         Part: {
-            EnergyPerMovement: .1,
-            EnergyForExisting: .1,
+            EnergyPerMovement: .2,
+            EnergyForExisting: .001,
             MaxRadius: 7,
             MaxDistanceFromCreature: 30,
-            MaxExtendContractSpeed: 2,
+            MaxExtendContractSpeed: 5,
             MaxAngularSpeed: Math.PI / 100,
             MinRadiusForConsumption: 1,
         },
     },
     Fluxuation: {
-        RandomConnectionWeightChange: () => plusOrMinusMax(.5),
+        RandomConnectionWeightChange: () => plusOrMinusMax(.2),
         RandomScanRadiusChange: () => plusOrMinusMax(5),
     },
     Mutation: {
         GlobalMutationRate: .80,
     },
     World: {
-        FoodDensity: .00125,
+        FoodDensity: .0006,
+        FoodRegenerationRatePerTick: .002,
         GenerationLengthInSec: 10,
         MaxCreatures: 50,
         TickIntervalInMs: 10,
