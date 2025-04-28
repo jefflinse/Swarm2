@@ -21,7 +21,7 @@ var Config = {
         StartingEnergy: 500,
         EnergyPerFood: 100,
         EnergyPerMovement: .20,
-        ReproductionEnergyThreshold: 1.5,
+        ReproductionEnergyThreshold: 2.0,
         AngularMaxSpeed: Math.PI / 180,
         LinearMaxSpeed: 1,
         MaxRadius: 10,
